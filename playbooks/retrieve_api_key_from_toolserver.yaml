@@ -1,0 +1,28 @@
+---
+- name: Retrieve API_KEY from .env file
+  hosts: tool-servers
+  tasks:
+    - set_fact:
+        env_file_path: "/home/{{ansible_user}}/tool-server/.env"
+    - name: Check if .env file exists
+      stat:
+        path: "{{ env_file_path }}"
+      register: env_file_stat
+
+    - name: Fail if .env file is not found
+      fail:
+        msg: ".env file not found on the remote server"
+      when: not env_file_stat.stat.exists
+
+    - name: Retrieve API_KEY from .env file
+      shell: "grep '^API_KEY=' {{ env_file_path }} | cut -d '=' -f2-"
+      register: api_key_value
+      when: env_file_stat.stat.exists
+
+    # Write api_key to a local file
+    - name: Write API_KEY to a local file
+      copy:
+        content: "{{ api_key_value.stdout }}"
+        dest: "{{ api_key_txt }}"
+      delegate_to: localhost
+      when: api_key_value.stdout is defined

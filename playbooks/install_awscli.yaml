@@ -1,0 +1,41 @@
+- name: Install AWS CLI on Amazon Linux EC2
+  hosts: mara-servers,tool-servers
+  become: true
+  tasks:
+    # Check if AWS CLI is installed
+    - name: Check if AWS CLI is installed
+      command: "aws --version"
+      register: awscli_installed
+      ignore_errors: yes
+    - name: Install the unzip package (required for AWS CLI installation)
+      yum:
+        name: unzip
+        state: present
+      when: awscli_installed.rc != 0
+
+    - name: Download the AWS CLI version 2 installer
+      get_url:
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp/awscliv2.zip"
+      when: awscli_installed.rc != 0
+
+    - name: Unzip the AWS CLI package
+      when: awscli_installed.rc != 0
+      unarchive:
+        src: "/tmp/awscliv2.zip"
+        dest: "/tmp/"
+        remote_src: yes
+
+    - name: Run the AWS CLI installer
+      when: awscli_installed.rc != 0
+      shell: "/tmp/aws/install --update"
+
+    - name: Verify AWS CLI installation
+      shell: aws --version
+      register: awscli_version
+      when: awscli_installed.rc != 0
+
+    - name: Print AWS CLI version
+      debug:
+        msg: "AWS CLI is installed: {{ awscli_version.stdout | default(awscli_installed.stdout) }}"
+      when: awscli_installed.rc != 0

@@ -1,0 +1,41 @@
+- name: Install Docker on Amazon Linux EC2
+  hosts: mara-servers,tool-servers
+  become: true
+  tasks:
+    - name: Check if Docker is installed
+      command: "docker --version"
+      register: docker_installed
+      ignore_errors: yes
+
+    - name: Update the system packages
+      yum:
+        name: "*"
+        state: latest
+      when: docker_installed.rc != 0
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+      when: docker_installed.rc != 0
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+      when: docker_installed.rc != 0
+
+    - name: Add the ansible_user to the docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+      when: docker_installed.rc != 0
+
+    - name: Print Docker version
+      debug:
+        msg: "Docker is installed: {{ docker_installed.stdout }}"
+
+    - name: Reset SSH connection
+      meta: reset_connection
