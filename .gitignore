@@ -3,3 +3,4 @@ temp
 inventory*.yaml
 tool_server_api_key.txt
 *.DS_Store
+*.pyc
