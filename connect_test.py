@@ -16,7 +16,6 @@ session = winrm.Session(
     transport='ntlm',
     server_cert_validation='ignore',
 )
-if not session:
-    raise Exception('Cannot connect to Windows host')
-else:
-    print('Connected to Windows host')
+# Run ipconfig in session
+result = session.run_cmd('ipconfig')
+
