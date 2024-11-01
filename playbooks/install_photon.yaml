@@ -5,8 +5,8 @@
   hosts: windows
   gather_facts: no
   vars:
-    local_photon_zip: ../../temp/photon-onpremises-server-classic-sdk_v5-0-13-32034.zip
-    local_license_file: ../../temp/simim91296@gocasin.com.Photon-vX.free.100-ccu.license
+    local_photon_zip: ../temp/photon-onpremises-server-classic-sdk_v5-0-13-32034.zip
+    local_license_file: ../temp/simim91296@gocasin.com.Photon-vX.free.100-ccu.license
     photon_zip_dir: C:\Users\Administrator\Desktop\photon-onpremises-server-classic-sdk_v5-0-13-32034.zip
     photon_dir: C:\Users\Administrator\Desktop\photon
     license_file: 'C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\photon.license'
@@ -43,6 +43,9 @@
     - name: Show result of file copy
       debug:
         var: license_copy_result
-    # - name: Execute the PhotonControl.exe
-    #   win_command: C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\PhotonControl.exe
-    #   register: photon_control_result
+    - name: Install the LoadBalancer Service
+      win_command: C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\_service.install
+      register: lb_service_install
+    - name: Start the LoadBalancer Service
+      win_command: C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\_service.start
+      register: lb_service_start
