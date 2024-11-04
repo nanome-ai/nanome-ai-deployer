@@ -18,7 +18,7 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 def gather_windows_host_info():
     # Get ip address of remote server
     ip_address = input("Enter the server IP address: ")
-    port = input("Enter the port number for RDP connection (default is 3389): ") or '3389'
+    port = input("Enter the port number for WinRM HTTP connection (default is 5985): ") or '5985'
     # Ask for the username to log into the server
     username = input("Enter the username for RDP login: ")
     # Ask for the path to the private key file
