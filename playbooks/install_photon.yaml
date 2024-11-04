@@ -1,46 +1,37 @@
 ---
-- name: Copy file to Windows server
+- name: Download and Install Photon
   hosts: windows
   gather_facts: no
   vars:
-    local_photon_zip: ../temp/photon-onpremises-server-classic-sdk_v5-0-13-32034.zip
-    local_license_file: ../temp/simim91296@gocasin.com.Photon-vX.free.100-ccu.license
-    photon_zip_dir: C:\Users\Administrator\Desktop\photon
+    photon_s3: https://nanome.s3.us-west-1.amazonaws.com/enterprise_deployment/photon-server-sdk_v5-0-12-24499-rc1.zip
+    license_s3: https://nanome.s3.us-west-1.amazonaws.com/enterprise_deployment/simim91296%40gocasin.com.Photon-vX.free.100-ccu.license 
+    photon_zip_dir: C:\Users\Administrator\Desktop\photon.zip
     photon_dir: C:\Users\Administrator\Desktop\photon
     license_file: 'C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\photon.license'
   tasks:
     - name: Check if the photon zip file exists on the remote server
       win_stat:
         path: "{{ photon_zip_dir }}"
-      register: photon_zip
-    - name: Copy file to the remote Windows server
-      when: not photon_zip.stat.exists
-      win_copy:
-        src: "{{ local_photon_zip }}"
-        dest: "{{ photon_zip_dir }}"
-      register: copy_result
-    - name: Show result of file copy
-      debug:
-        var: copy_result
-    - name: Check if the license file exists on the remote server
-      win_stat:
-        path: '{{ license_file }}'
-      register: license_file
+      register: photon_zip_exists
+    - name: Download Photon from S3 bucket
+      when: not photon_zip_exists.stat.exists
+      win_command: curl -o {{ photon_zip_dir }} {{ photon_s3 }}
     - name: Unzip the file
-      when: 
+      when: not photon_zip_exists.stat.exists
       win_unzip:
         src: "{{ photon_zip_dir }}"
         dest: "{{ photon_dir }}"
       register: unzip_result
-    - name: Copy license file
-      when: not license_file.stat.exists
-      win_copy:
-        src: "{{ local_license_file }}"
-        dest: C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\photon.license
+
+    - name: Check if the license file exists on the remote server
+      win_stat:
+        path: '{{ license_file }}'
+      register: license_file_exists
+
+    - name: Download Photon from S3 bucket
+      when: not license_file_exists.stat.exists
+      win_command: curl -o {{ license_file }} {{ license_s3 }}
       register: license_copy_result
-    - name: Show result of file copy
-      debug:
-        var: license_copy_result
     - name: Install the LoadBalancer Service
       win_command: C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\_service.install
       register: lb_service_install
