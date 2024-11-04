@@ -290,6 +290,7 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 def main():
     print("\nThanks for using MARA! Let's get started setting up your servers!\n")
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
+    update_server_configs = None
     if os.path.exists(inventory_filepath):
         server_config_actions = None
         while server_config_actions not in ['1', '2']:
