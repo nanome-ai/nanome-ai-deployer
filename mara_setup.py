@@ -290,7 +290,7 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 def main():
     print("\nThanks for using MARA! Let's get started setting up your servers!\n")
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
-    update_server_configs = None
+    update_server_configs = True
     if os.path.exists(inventory_filepath):
         server_config_actions = None
         while server_config_actions not in ['1', '2']:
@@ -304,9 +304,11 @@ def main():
         update_server_configs = server_config_actions == '2'
 
     if update_server_configs:
-        # Gather server information from user
-        print("\nSetting up the MARA server")
-        mara_host_config = gather_user_input()
+        mara_host_config = {
+            'ansible_host': '127.0.0.1',
+            'ansible_user': 'ec2-user',
+            'ansible_connection': 'local'
+        }
         print("\nSetting up the Tool Server")
         tool_server_host_config = gather_user_input()
         create_inventory_file(inventory_filepath, mara_host_config, tool_server_host_config)
