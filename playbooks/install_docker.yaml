@@ -14,8 +14,47 @@
       when:
         - docker_installed.rc != 0
         - ansible_os_family == "RedHat"
+    
+    - name: Update apt cache on Debian-based systems
+      ansible.builtin.apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
 
-    - name: Install Docker
+    - name: Install prerequisites on Debian-based systems
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+    - name: Add Docker GPG key and repository on Debian-based systems
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+    - name: Add Docker repository on Debian-based systems
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        state: present
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+    - name: Install Docker on Debian-based systems
+      ansible.builtin.apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+    - name: Install Docker on Redhat
       yum:
         name: docker
         state: present
@@ -29,14 +68,14 @@
         name: docker
         state: started
         enabled: true
-      when: docker_installed.rc != 0
+      # when: docker_installed.rc != 0
 
     - name: Add the ansible_user to the docker group
       user:
         name: "{{ ansible_user }}"
         groups: docker
         append: true
-      when: docker_installed.rc != 0
+      # when: docker_installed.rc != 0
 
     - name: Print Docker version
       debug:

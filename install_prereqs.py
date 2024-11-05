@@ -313,7 +313,7 @@ def main():
     if update_server_configs:
         mara_host_config = {
             'ansible_host': '127.0.0.1',
-            'ansible_user': 'ec2-user',
+            'ansible_user': getpass.getuser(),
             'ansible_connection': 'local'
         }
         print("\nSetting up the Tool Server")
