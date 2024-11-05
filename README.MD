@@ -14,14 +14,14 @@ ssh username@mara-server-host
 
 2) Install git
 
-*Redhat based system*
 ```sh
+# Redhat based system
 sudo yum update
 sudo yum install git
 ```
 
-*Debian based system*
 ```sh
+# Debian based system
 sudo apt-get update
 sudo apt install git
 ```
@@ -33,14 +33,14 @@ git clone https://github.com/nanome-ai/nanome-ai-deployer
 
 4) Set up Python and pip
 
-*Redhat based system*
 ```sh
+# Redhat based system
 sudo yum install python
 curl -sS https://bootstrap.pypa.io/get-pip.py | python3
 ```
 
-*Debian based system*
 ```sh
+# Debian based system
 sudo apt install python
 curl -sS https://bootstrap.pypa.io/get-pip.py | python3
 ```
