@@ -31,7 +31,13 @@ sudo apt install git
 git clone https://github.com/nanome-ai/nanome-ai-deployer
 ```
 
-4) Set up Python and pip
+
+4) Cd into nanome-ai-deployer directory
+```sh
+cd nanome-ai-deployer
+```
+
+5) Set up Python and pip
 
 ```sh
 # Redhat based system
@@ -41,13 +47,14 @@ curl -sS https://bootstrap.pypa.io/get-pip.py | python3
 
 ```sh
 # Debian based system
-sudo apt install python
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3
+sudo apt install python3
+
+# Set up virtualenv
+sudo apt install python3-venv
+python3 -m venv venv
+source venv/bin/activate
 ```
-5) Cd into nanome-ai-deployer directory
-```sh
-cd nanome-ai-deployer
-```
+
 
 6) Install Requirements
 ```sh

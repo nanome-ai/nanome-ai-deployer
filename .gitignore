@@ -5,3 +5,4 @@ tool_server_api_key.txt
 *.DS_Store
 *.pyc
 *.pem
+venv
