@@ -54,7 +54,14 @@ cd nanome-ai-deployer
 pip install -r requirements.txt
 ```
 
-7) Run install scripts
+7) Install Docker and AWSCLI
+```sh
+python install_prereqs.py
+```
+
+8) Reboot you MARA server, so that Docker changes take effect.
+
+9) Run install scripts
 ```sh
 python mara_setup.py
 python photon_setup.py

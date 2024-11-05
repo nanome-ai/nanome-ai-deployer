@@ -288,7 +288,14 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 
 
 def main():
-    print("\nThanks for using MARA! Let's get started setting up your servers!\n")
+    print((
+        "\nThanks for using MARA!\n\n"
+        "This script will do 3 things:\n"
+        "\t- Set up host information for your tool server\n"
+        "\t- Install Docker on this server and tool server\n"
+        "\t- Install AWSCLI on your servers, and configure AWS credentials.\n"
+        
+    ))
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     update_server_configs = True
     if os.path.exists(inventory_filepath):
@@ -313,17 +320,29 @@ def main():
         tool_server_host_config = gather_user_input()
         create_inventory_file(inventory_filepath, mara_host_config, tool_server_host_config)
 
-    # Setup tool-server deployment
-    print('\nConfiguring the Tool Server...\n')
-    api_key_file = os.path.join(os.path.dirname(__file__), 'tool_server_api_key.txt')
-    configure_tool_server(inventory_filepath, api_key_file)
+    print("Installing AWS CLI on your servers...")
+    install_awscli_playbook = os.path.join(PLAYBOOKS_DIR, 'install_awscli.yaml')
+    subprocess.run([
+        'ansible-playbook',
+        '-i', inventory_filepath,
+        install_awscli_playbook
+    ])
 
-    # Configure the mara deployment
-    print('\nConfiguring the MARA Server...\n')
-    with open(api_key_file, 'r') as f:
-        tool_server_api_key = f.read()
-    configure_mara_server(inventory_filepath, tool_server_api_key)
-    os.remove(api_key_file)
+    print("Installing Docker on your servers...")
+    install_docker_playbook = os.path.join(PLAYBOOKS_DIR, 'install_docker.yaml')
+    subprocess.run([
+        'ansible-playbook',
+        '-i', inventory_filepath,
+        install_docker_playbook
+    ])
+
+
+    # Add AWS credentials to the servers
+    configure_aws_credentials(inventory_filepath)
+
+    print('AWSCLI has been installed.')
+
+    print("Docker has been Installed! Note you may need to restart this server for changes to take effect.")
 
 
 if __name__ == "__main__":
