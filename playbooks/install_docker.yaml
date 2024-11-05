@@ -11,13 +11,18 @@
       yum:
         name: "*"
         state: latest
-      when: docker_installed.rc != 0
+      when:
+        - docker_installed.rc != 0
+        - ansible_os_family == "RedHat"
 
     - name: Install Docker
       yum:
         name: docker
         state: present
-      when: docker_installed.rc != 0
+      when:
+        - docker_installed.rc != 0
+        - ansible_os_family == "RedHat"
+
 
     - name: Start Docker service
       service:
