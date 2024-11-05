@@ -4,21 +4,31 @@
   tasks:
     # Check if AWS CLI is installed
     - name: Check if AWS CLI is installed
-      command: "aws --version"
+      ansible.builtin.shell: "command -v aws"
       register: awscli_installed
-      ignore_errors: yes
-    - name: Install the unzip package (required for AWS CLI installation)
+      changed_when: false
+      failed_when: false
+    - name: Redhat Install the unzip package
       yum:
         name: unzip
         state: present
-      when: awscli_installed.rc != 0
-
+      when:
+        - awscli_installed.rc != 0
+        - ansible_os_family == "RedHat"
+    
+    - name: Debian Install the unzip package
+      apt:
+        name: unzip
+        state: present
+        update_cache: yes
+      when:
+        - awscli_installed.rc != 0
+        - ansible_os_family == "Debian"
     - name: Download the AWS CLI version 2 installer
       get_url:
         url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
         dest: "/tmp/awscliv2.zip"
       when: awscli_installed.rc != 0
-
     - name: Unzip the AWS CLI package
       when: awscli_installed.rc != 0
       unarchive:

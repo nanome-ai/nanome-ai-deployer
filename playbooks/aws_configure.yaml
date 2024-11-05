@@ -7,6 +7,7 @@
       yum:
         name: aws-cli
         state: present
+      when: ansible_os_family == "RedHat"
 
     - name: Run aws configure (set AWS access key)
       shell: |

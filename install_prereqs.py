@@ -144,8 +144,9 @@ def retrieve_aws_credentials_from_toolserver(inventory_filepath):
             print("An error occurred:")
             print(result.stderr)
             return aws_creds
-        with open(f.name, 'r') as f:
-            aws_creds = yaml.safe_load(f)
+        if os.stat(f.name).st_size != 0:
+            with open(f.name, 'r') as f:
+                aws_creds = yaml.safe_load(f)
         return aws_creds
 
 
