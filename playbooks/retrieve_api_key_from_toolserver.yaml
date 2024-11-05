@@ -9,9 +9,8 @@
         path: "{{ env_file_path }}"
       register: env_file_stat
 
-    - name: Fail if .env file is not found
-      fail:
-        msg: ".env file not found on the remote server"
+    - name: Exit playbook if .env is not found
+      meta: end_play
       when: not env_file_stat.stat.exists
 
     - name: Retrieve API_KEY from .env file
