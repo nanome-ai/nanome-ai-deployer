@@ -1,41 +1,93 @@
-- name: Install Docker on Amazon Linux EC2
-  hosts: mara-servers,tool-servers
-  become: true
+---
+- name: Install Docker on EC2
+  hosts: mara-servers,tool-servers  # Replace with your inventory group or host
+  become: yes
+
   tasks:
-    - name: Check if Docker is installed
-      command: "docker --version"
+    - name: Check if Docker is already installed
+      ansible.builtin.command: docker --version
       register: docker_installed
-      ignore_errors: yes
+      failed_when: docker_installed.rc > 1
+      changed_when: false
+      ignore_errors: true
 
-    - name: Update the system packages
-      yum:
-        name: "*"
-        state: latest
-      when: docker_installed.rc != 0
-
-    - name: Install Docker
-      yum:
-        name: docker
+    - name: Install prerequisites on RedHat-based systems
+      ansible.builtin.yum:
+        name: "{{ item }}"
         state: present
-      when: docker_installed.rc != 0
+      loop:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      when:
+        - ansible_os_family == "RedHat"
+        - docker_installed.rc is defined and docker_installed.rc != 0
 
-    - name: Start Docker service
-      service:
+    - name: Install prerequisites on Debian-based systems
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+
+    - name: Add Docker repository on RedHat-based systems
+      ansible.builtin.yum_repository:
+        name: docker
+        description: Docker Repository
+        baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+        gpgcheck: yes
+        enabled: yes
+      when:
+        - ansible_os_family == "RedHat"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+
+    - name: Add Docker GPG key and repository on Debian-based systems
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+
+    - name: Add Docker repository on Debian-based systems
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        state: present
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+
+    - name: Install Docker on RedHat-based systems
+      ansible.builtin.yum:
+        name: docker-ce
+        state: present
+      when:
+        - ansible_os_family == "RedHat"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+
+    - name: Install Docker on Debian-based systems
+      ansible.builtin.apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+      when:
+        - ansible_os_family == "Debian"
+        - docker_installed.rc is defined and docker_installed.rc != 0
+
+    - name: Ensure Docker service is started and enabled
+      ansible.builtin.service:
         name: docker
         state: started
-        enabled: true
-      when: docker_installed.rc != 0
+        enabled: yes
+      when: docker_installed.rc is defined and docker_installed.rc != 0
 
-    - name: Add the ansible_user to the docker group
-      user:
-        name: "{{ ansible_user }}"
-        groups: docker
-        append: true
-      when: docker_installed.rc != 0
-
-    - name: Print Docker version
-      debug:
-        msg: "Docker is installed: {{ docker_installed.stdout }}"
-
-    - name: Reset SSH connection
-      meta: reset_connection
+    - name: Display Docker version
+      ansible.builtin.debug:
+        msg: "Docker version: {{ docker_installed.stdout }}"
+      when: docker_installed.rc == 0
