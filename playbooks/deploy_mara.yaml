@@ -47,17 +47,23 @@
       shell: docker tag 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest mara-enterprise:latest
       register: tag_output
 
+    - name: Check if Docker container exists
+      community.docker.docker_container_info:
+        name: mara-ai
+      register: container_info
+      failed_when: false  # Prevents failure if the container does not exist
+
     - name: Stop existing Docker container.
       docker_container:
         name: mara-ai
         state: stopped
-      ignore_errors: true
+      when: container_info.exists is defined and container_info.exists
     
     - name: Remove any existing Docker container with same name
       docker_container:
         name: mara-ai
         state: absent
-      ignore_errors: true
+      when: container_info.exists is defined and container_info.exists
     
     - name: Run the Docker container
       docker_container:

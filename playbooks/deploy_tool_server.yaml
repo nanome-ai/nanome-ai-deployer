@@ -48,17 +48,24 @@
       copy:
         src: "{{ env_file }}"
         dest: "{{ host_env_file }}"
+
+    - name: Check if Docker container exists
+      community.docker.docker_container_info:
+        name: mara-tool-server
+      register: container_info
+      failed_when: false  # Prevents failure if the container does not exist
+
     - name: Stop existing Docker container.
       docker_container:
         name: mara-tool-server
         state: stopped
-      ignore_errors: true
-
+      when: container_info.exists is defined and container_info.exists
+    
     - name: Remove any existing Docker container with same name
       docker_container:
         name: mara-tool-server
         state: absent
-      ignore_errors: true
+      when: container_info.exists is defined and container_info.exists
 
     - name: Run the Docker container
       docker_container:
