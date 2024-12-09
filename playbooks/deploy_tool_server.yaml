@@ -1,6 +1,6 @@
 ---
 - name: Deploy Mara Tool Server
-  hosts: tool-servers
+  hosts: mara-servers
   tasks:
     - set_fact:
         working_dir: "/home/{{ ansible_user }}/tool-server"

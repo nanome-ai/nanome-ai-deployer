@@ -43,13 +43,12 @@ def gather_user_input():
     return host_config
 
 
-def create_inventory_file(inventory_file, mara_host_config, tool_server_host_config):
+def create_inventory_file(inventory_file, mara_host_config):
     # Construct the inventory structure
     inventory = {
         'myhosts': {
             'hosts': {
                 'mara-servers': mara_host_config,
-                'tool-servers': tool_server_host_config
             }
         }
     }
@@ -310,13 +309,12 @@ def main():
             'ansible_connection': 'local'
         }
         print("\nSetting up the Tool Server")
-        tool_server_host_config = gather_user_input()
-        create_inventory_file(inventory_filepath, mara_host_config, tool_server_host_config)
+        create_inventory_file(inventory_filepath, mara_host_config)
 
     # Setup tool-server deployment
-    print('\nConfiguring the Tool Server...\n')
+    # print('\nConfiguring the Tool Server...\n')
     api_key_file = os.path.join(os.path.dirname(__file__), 'tool_server_api_key.txt')
-    configure_tool_server(inventory_filepath, api_key_file)
+    # configure_tool_server(inventory_filepath, api_key_file)
 
     # Configure the mara deployment
     print('\nConfiguring the MARA Server...\n')

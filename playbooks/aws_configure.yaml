@@ -1,6 +1,6 @@
 ---
 - name: Configure AWS CLI using aws configure command
-  hosts: mara-servers,tool-servers
+  hosts: mara-servers
   become: true
   tasks:
     - name: Install AWS CLI if not installed

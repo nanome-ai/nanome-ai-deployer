@@ -1,5 +1,5 @@
 - name: Install Docker on Amazon Linux EC2
-  hosts: mara-servers,tool-servers
+  hosts: mara-servers
   become: true
   tasks:
     - name: Check if Docker is installed
