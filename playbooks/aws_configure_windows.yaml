@@ -1,0 +1,30 @@
+---
+- name: Configure AWS CLI using aws configure command
+  hosts: windows
+  # become: true
+  tasks:
+    - name: Run aws configure (set AWS access key)
+      ansible.windows.win_shell: |
+        aws configure set aws_access_key_id {{ aws_access_key }} --profile default
+      # become_user: "{{ ansible_user }}"
+
+    - name: Run aws configure (set AWS secret access key)
+      ansible.windows.win_shell: |
+        aws configure set aws_secret_access_key {{ aws_secret_key }} --profile default
+      # become_user: "{{ ansible_user }}"
+
+    - name: Run aws configure (set AWS default region)
+      ansible.windows.win_shell: |
+        aws configure set region {{ region }} --profile default
+      # become_user: "{{ ansible_user }}"
+
+    - name: Verify AWS CLI configuration
+      ansible.windows.win_shell: aws sts get-caller-identity
+      register: aws_identity
+      # become_user: "{{ ansible_user }}"
+
+    - name: Print AWS CLI identity
+      debug:
+        msg: "AWS CLI is configured. Caller identity: {{ aws_identity.stdout }}"
+  vars:
+    region: us-east-1
