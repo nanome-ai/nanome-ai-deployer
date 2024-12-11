@@ -183,6 +183,21 @@ def retrieve_llm_api_key_from_mara(inventory_filepath):
             llm_api_key = f.read()
         return llm_api_key
 
+def configure_workspace_api(inventory_filepath):
+    deploy_workspace_api_playbook = os.path.join(PLAYBOOKS_DIR, 'deploy_workspace_api.yaml')
+    subprocess.run([
+        'ansible-playbook',
+        '-i', inventory_filepath,
+        deploy_workspace_api_playbook
+    ])
+
+def configure_workspace_load_service(inventory_filepath):
+    deploy_workspace_load_service_playbook = os.path.join(PLAYBOOKS_DIR, 'deploy_workspace_load_service.yaml')
+    subprocess.run([
+        'ansible-playbook',
+        '-i', inventory_filepath,
+        deploy_workspace_load_service_playbook
+    ])
 
 def configure_tool_server(inventory_filepath, api_key_file=''):
     api_key_selection = None
@@ -298,12 +313,19 @@ def main():
         print("\nSetting up the Tool Server")
         create_inventory_file(inventory_filepath, mara_host_config)
 
+    print("Deploying Workspace API...")
+    configure_workspace_api(inventory_filepath)
+    
+    print("Deploying Workspace Load Service...")
+    configure_workspace_load_service(inventory_filepath)
+
     # Setup tool-server deployment
     api_key_file = os.path.join(os.path.dirname(__file__), 'tool_server_api_key.txt')
+    print("Deploying the Tool Server...")
     configure_tool_server(inventory_filepath, api_key_file)
 
     # Configure the mara deployment
-    print('\nConfiguring the MARA Server...\n')
+    print('\nDeploying the MARA Server...\n')
     with open(api_key_file, 'r') as f:
         tool_server_api_key = f.read()
     configure_mara_server(inventory_filepath, tool_server_api_key)
