@@ -1,15 +1,15 @@
 ---
-- name: Deploy Workspace API
+- name: Deploy Workspace Load Service
   hosts: mara-servers
   tasks:
     - set_fact:
-        working_dir: "/home/{{ ansible_user }}/workspace-api"
+        working_dir: "/home/{{ ansible_user }}/workspace-load-service"
 
     - set_fact:
         https_enabled: "{{ https_enabled | default(false) }}"
     
     - set_fact:
-        port: "{{ 443 if https_enabled else 8002 }}"
+        port: "{{ 443 if https_enabled else 8989 }}"
     
     - set_fact:
         host_certs_path: "{{ working_dir }}/certs/"
@@ -19,7 +19,7 @@
 
     - name: create host_certs_path if not already exists
       command: mkdir -p "{{ host_certs_path }}"
-
+    
     - name: Copy .env file to the remote server
       when: env_file is defined
       copy:
@@ -39,12 +39,12 @@
     
     - name: Pull the latest image from ECR
       docker_image:
-        name: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api
+        name: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service
         tag: latest
         source: pull
     
     - name: Tag image with simpler name
-      shell: docker tag 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest workspace-api:latest
+      shell: docker tag 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest workspace-load-service:latest
       register: tag_output
 
     - name: Check if Docker container exists
@@ -73,16 +73,13 @@
         restart_policy: always
         platform: linux/amd64
         ports:
-          - "{{ port }}:8000"
+          - "{{ port }}:8989"
         env:
-          HTTPS: "{{ https_enabled | string }}"
-          AUTH_API: "https://api.nanome.ai"
-          DB_DEBUG: 'true'
-          DB_PATH: "/data/workspace-api.db"
-          ENV: "dev"
+          NANOME_SERVICE_PORT: '8989'
+          NANOME_SERVICE_API_URL: http://localhost/query
         # env_file: "{{ host_env_file }}"
         volumes:
-          - workspace-api:/app/data
+          - workspace-load-service:/data
         network_mode: host
 
     - name: Assert Docker container running
