@@ -276,14 +276,16 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
                 "New LLM_API_KEY: "
             ))
 
-    tool_server_url = input("Enter the Tool Server Host IP or Url (default http://127.0.0.1:8001): ") or 'http://127.0.0.1:8001'
+    tool_server_url = 'http://127.0.0.1:8001'
+    workspace_api_url = 'http://127.0.0.1:8002'
     # Write to .env file
     env_file = os.path.join(os.path.dirname(__file__), '.env.maraserver')
 
     env_var_values.update({
         'LLM_API_KEY': llm_key,
         'TOOL_SERVER_URL': tool_server_url,
-        'TOOL_SERVER_KEY': tool_server_api_key
+        'TOOL_SERVER_KEY': tool_server_api_key,
+        'NANOME_SERVICES_URL': workspace_api_url
     })
     with open(env_file, 'w') as f:
         env_content = '\n'.join([f'{k}={v}' for k, v in env_var_values.items()])
@@ -302,7 +304,15 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 
 
 def main():
-    print("\nThanks for using MARA! Let's get started setting up your servers!\n")
+    print(
+        "\nThanks for using MARA! Let's get started setting up your server!\n"
+        "This script will download and run 4 docker containers:\n"
+        "\t- Workspace API: Acts as a data store of Nanome workspaces.\n"
+        "\t- Workspace Load Service: Contains business logic for rendering structure files as a Nanome workspace.\n"
+        "\t- Tool Server: Runs computations for MARA workflows.\n"
+        "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
+    )
+    input('Press any key to continue')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     if not os.path.exists(inventory_filepath):
         mara_host_config = {
@@ -310,7 +320,6 @@ def main():
             'ansible_user': 'ec2-user',
             'ansible_connection': 'local'
         }
-        print("\nSetting up the Tool Server")
         create_inventory_file(inventory_filepath, mara_host_config)
 
     print("Deploying Workspace API...")
@@ -331,6 +340,13 @@ def main():
     configure_mara_server(inventory_filepath, tool_server_api_key)
     os.remove(api_key_file)
 
+    print(
+        "\nYour Services have been set up\n"
+        "\t- MARA: 127.0.0.1:8000\n"
+        "\t- Tool Server: 127.0.0.1:8001\n"
+        "\t- Workspace API: 127.0.0.1:8002\n"
+        "\t- Workspace Load Service: 127.0.0.1:8003\n"
+    )
 
 if __name__ == "__main__":
     main()
