@@ -72,14 +72,12 @@
         state: started
         restart_policy: always
         platform: linux/amd64
-        ports:
-          - "{{ port }}:8989"
         env:
-          NANOME_SERVICE_PORT: '8989'
+          NANOME_SERVICE_PORT: '8003'
           NANOME_SERVICE_API_URL: http://localhost/query
         volumes:
           - workspace-load-service:/data
-
+        network_mode: host
     - name: Assert Docker container running
       shell: docker ps | grep workspace-load-service
       register: container_status

@@ -74,8 +74,6 @@
         state: started
         restart_policy: always
         platform: linux/amd64
-        ports:
-          - "{{ port }}:8001"
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - "{{ host_certs_path }}:/app/certs/"
@@ -83,6 +81,7 @@
         env:
           HTTPS: "{{ https_enabled | string }}"
         env_file: "{{ host_env_file }}"
+        network_mode: host
     - name: Assert Docker container running
       shell: docker ps | grep mara-tool-server
       register: container_status
