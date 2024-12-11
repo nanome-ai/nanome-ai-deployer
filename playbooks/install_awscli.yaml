@@ -1,5 +1,5 @@
 - name: Install AWS CLI on Amazon Linux EC2
-  hosts: mara-servers,tool-servers
+  hosts: mara-servers
   become: true
   tasks:
     # Check if AWS CLI is installed

@@ -18,4 +18,5 @@ session = winrm.Session(
 )
 # Run ipconfig in session
 result = session.run_cmd('ipconfig')
+print(result.std_out.decode())
 

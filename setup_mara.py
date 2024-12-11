@@ -43,13 +43,12 @@ def gather_user_input():
     return host_config
 
 
-def create_inventory_file(inventory_file, mara_host_config, tool_server_host_config):
+def create_inventory_file(inventory_file, mara_host_config):
     # Construct the inventory structure
     inventory = {
         'myhosts': {
             'hosts': {
                 'mara-servers': mara_host_config,
-                'tool-servers': tool_server_host_config
             }
         }
     }
@@ -184,6 +183,21 @@ def retrieve_llm_api_key_from_mara(inventory_filepath):
             llm_api_key = f.read()
         return llm_api_key
 
+def configure_workspace_api(inventory_filepath):
+    deploy_workspace_api_playbook = os.path.join(PLAYBOOKS_DIR, 'deploy_workspace_api.yaml')
+    subprocess.run([
+        'ansible-playbook',
+        '-i', inventory_filepath,
+        deploy_workspace_api_playbook
+    ])
+
+def configure_workspace_load_service(inventory_filepath):
+    deploy_workspace_load_service_playbook = os.path.join(PLAYBOOKS_DIR, 'deploy_workspace_load_service.yaml')
+    subprocess.run([
+        'ansible-playbook',
+        '-i', inventory_filepath,
+        deploy_workspace_load_service_playbook
+    ])
 
 def configure_tool_server(inventory_filepath, api_key_file=''):
     api_key_selection = None
@@ -262,14 +276,16 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
                 "New LLM_API_KEY: "
             ))
 
-    tool_server_url = input("Enter the Tool Server Host IP or Url (default http://127.0.0.1:8001): ") or 'http://127.0.0.1:8001'
+    tool_server_url = 'http://127.0.0.1:8001'
+    workspace_api_url = 'http://127.0.0.1:8002'
     # Write to .env file
     env_file = os.path.join(os.path.dirname(__file__), '.env.maraserver')
 
     env_var_values.update({
         'LLM_API_KEY': llm_key,
         'TOOL_SERVER_URL': tool_server_url,
-        'TOOL_SERVER_KEY': tool_server_api_key
+        'TOOL_SERVER_KEY': tool_server_api_key,
+        'NANOME_SERVICES_URL': workspace_api_url
     })
     with open(env_file, 'w') as f:
         env_content = '\n'.join([f'{k}={v}' for k, v in env_var_values.items()])
@@ -288,43 +304,49 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 
 
 def main():
-    print("\nThanks for using MARA! Let's get started setting up your servers!\n")
+    print(
+        "\nThanks for using MARA! Let's get started setting up your server!\n"
+        "This script will download and run 4 docker containers:\n"
+        "\t- Workspace API: Acts as a data store of Nanome workspaces.\n"
+        "\t- Workspace Load Service: Contains business logic for rendering structure files as a Nanome workspace.\n"
+        "\t- Tool Server: Runs computations for MARA workflows.\n"
+        "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
+    )
+    input('Press any key to continue')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
-    update_server_configs = True
-    if os.path.exists(inventory_filepath):
-        server_config_actions = None
-        while server_config_actions not in ['1', '2']:
-            server_config_actions = input((
-                f"You already have servers configured in {inventory_filepath}.\n"
-                "How do you want to proceed?\n"
-                "1. Use existing settings\n"
-                "2. Update server configurations\n\n"
-                "Make a selection (1|2): "
-            ))
-        update_server_configs = server_config_actions == '2'
-
-    if update_server_configs:
+    if not os.path.exists(inventory_filepath):
         mara_host_config = {
             'ansible_host': '127.0.0.1',
             'ansible_user': 'ec2-user',
             'ansible_connection': 'local'
         }
-        print("\nSetting up the Tool Server")
-        tool_server_host_config = gather_user_input()
-        create_inventory_file(inventory_filepath, mara_host_config, tool_server_host_config)
+        create_inventory_file(inventory_filepath, mara_host_config)
+
+    print("Deploying Workspace API...")
+    configure_workspace_api(inventory_filepath)
+    
+    print("Deploying Workspace Load Service...")
+    configure_workspace_load_service(inventory_filepath)
 
     # Setup tool-server deployment
-    print('\nConfiguring the Tool Server...\n')
     api_key_file = os.path.join(os.path.dirname(__file__), 'tool_server_api_key.txt')
+    print("Deploying the Tool Server...")
     configure_tool_server(inventory_filepath, api_key_file)
 
     # Configure the mara deployment
-    print('\nConfiguring the MARA Server...\n')
+    print('\nDeploying the MARA Server...\n')
     with open(api_key_file, 'r') as f:
         tool_server_api_key = f.read()
     configure_mara_server(inventory_filepath, tool_server_api_key)
     os.remove(api_key_file)
 
+    print(
+        "\nYour Services have been set up\n"
+        "\t- MARA: 127.0.0.1:8000\n"
+        "\t- Tool Server: 127.0.0.1:8001\n"
+        "\t- Workspace API: 127.0.0.1:8002\n"
+        "\t- Workspace Load Service: 127.0.0.1:8003\n"
+    )
 
 if __name__ == "__main__":
     main()

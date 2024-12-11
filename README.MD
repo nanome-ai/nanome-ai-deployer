@@ -70,6 +70,6 @@ python install_prereqs.py
 
 9) Run install scripts
 ```sh
-python mara_setup.py
-python photon_setup.py
+python setup_mara.py
+python setup_windows_server.py
 ```

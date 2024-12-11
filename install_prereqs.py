@@ -43,13 +43,12 @@ def gather_user_input():
     return host_config
 
 
-def create_inventory_file(inventory_file, mara_host_config, tool_server_host_config):
+def create_inventory_file(inventory_file, mara_host_config):
     # Construct the inventory structure
     inventory = {
         'myhosts': {
             'hosts': {
                 'mara-servers': mara_host_config,
-                'tool-servers': tool_server_host_config
             }
         }
     }
@@ -291,35 +290,20 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 def main():
     print((
         "\nThanks for using MARA!\n\n"
-        "This script will do 3 things:\n"
-        "\t- Set up host information for your tool server\n"
-        "\t- Install Docker on this server and tool server\n"
-        "\t- Install AWSCLI on your servers, and configure AWS credentials.\n"
+        "This script will do 2 things:\n"
+        "\t- Install Docker on this server.\n"
+        "\t- Install AWSCLI on this server, and configure AWS credentials.\n"
         
     ))
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
-    update_server_configs = True
-    if os.path.exists(inventory_filepath):
-        server_config_actions = None
-        while server_config_actions not in ['1', '2']:
-            server_config_actions = input((
-                f"You already have servers configured in {inventory_filepath}.\n"
-                "How do you want to proceed?\n"
-                "1. Use existing settings\n"
-                "2. Update server configurations\n\n"
-                "Make a selection (1|2): "
-            ))
-        update_server_configs = server_config_actions == '2'
-
-    if update_server_configs:
+    if not os.path.exists(inventory_filepath):
         mara_host_config = {
             'ansible_host': '127.0.0.1',
             'ansible_user': getpass.getuser(),
             'ansible_connection': 'local'
         }
         print("\nSetting up the Tool Server")
-        tool_server_host_config = gather_user_input()
-        create_inventory_file(inventory_filepath, mara_host_config, tool_server_host_config)
+        create_inventory_file(inventory_filepath, mara_host_config)
 
     print("Installing AWS CLI on your servers...")
     install_awscli_playbook = os.path.join(PLAYBOOKS_DIR, 'install_awscli.yaml')

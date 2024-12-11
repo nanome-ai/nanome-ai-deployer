@@ -81,7 +81,7 @@
           - "{{ host_certs_path }}:/app/certs"
           - mara-ai:/app/data
         network_mode: host
-    
+          
     - name: Assert Docker container running
       shell: docker ps | grep mara-ai
       register: container_status
