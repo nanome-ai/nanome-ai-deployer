@@ -1,0 +1,78 @@
+---
+- name: Deploy Workspace API
+  hosts: windows
+  tasks:
+    # - set_fact:
+    #     working_dir: "C:\Users\Administrator\Desktop"
+
+    # - set_fact:
+    #     https_enabled: "{{ https_enabled | default(false) }}"
+    
+    # - name: create host_certs_path if not already exists
+    #   command: mkdir -p "{{ host_certs_path }}"
+
+    # - name: Copy .env file to the remote server
+    #   when: env_file is defined
+    #   copy:
+    #     src: "{{ env_file }}"
+    #     dest: "{{ host_env_file }}"
+    
+    # - name: Copy the certs path to the remote server
+    #   when: certs_path is defined and https_enabled
+    #   copy:
+    #     src: "{{ certs_path }}"
+    #     dest: "{{ host_certs_path }}"
+    
+    - name: Log in to AWS ECR
+      win_shell: |
+        aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 441665557124.dkr.ecr.us-west-1.amazonaws.com
+      register: login_output
+
+
+    - name: Pull the latest image from ECR
+      win_shell: docker image pull 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest
+    - name: Tag image with simpler name
+      win_command: docker tag 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest workspace-api:latest
+      register: tag_output
+
+    - name: Check if Docker container exists
+      community.docker.docker_container_info:
+        name: workspace-api
+      register: container_info
+      failed_when: false  # Prevents failure if the container does not exist
+
+    - name: Stop existing Docker container.
+      docker_container:
+        name: workspace-api
+        state: stopped
+      when: container_info.exists is defined and container_info.exists
+    
+    - name: Remove any existing Docker container with same name
+      docker_container:
+        name: workspace-api
+        state: absent
+      when: container_info.exists is defined and container_info.exists
+    
+    - name: Run the Docker container
+      docker_container:
+        name: workspace-api
+        image: workspace-api:latest
+        state: started
+        restart_policy: always
+        platform: linux/amd64
+        ports:
+          - "{{ port }}:80"
+        env:
+          HTTPS: "{{ https_enabled | string }}"
+        env_file: "{{ host_env_file }}"
+        volumes:
+          - "{{ host_certs_path }}:/app/certs"
+          - workspace-api:/app/data
+        network_mode: host
+    
+    - name: Assert Docker container running
+      win_command: docker ps | grep workspace-api
+      register: container_status
+      failed_when: container_status.rc != 0
+      changed_when: container_status.rc == 0
+      ignore_errors: false
