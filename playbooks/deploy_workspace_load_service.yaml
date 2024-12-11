@@ -9,7 +9,7 @@
         https_enabled: "{{ https_enabled | default(false) }}"
     
     - set_fact:
-        port: "{{ 443 if https_enabled else 8989 }}"
+        port: "{{ 443 if https_enabled else 8003 }}"
     
     - set_fact:
         host_certs_path: "{{ working_dir }}/certs/"
@@ -49,26 +49,26 @@
 
     - name: Check if Docker container exists
       community.docker.docker_container_info:
-        name: workspace-api
+        name: workspace-load-service
       register: container_info
       failed_when: false  # Prevents failure if the container does not exist
 
     - name: Stop existing Docker container.
       docker_container:
-        name: workspace-api
+        name: workspace-load-service
         state: stopped
       when: container_info.exists is defined and container_info.exists
 
     - name: Remove any existing Docker container with same name
       docker_container:
-        name: workspace-api
+        name: workspace-load-service
         state: absent
       when: container_info.exists is defined and container_info.exists
     
     - name: Run the Docker container
       docker_container:
-        name: workspace-api
-        image: workspace-api:latest
+        name: workspace-load-service
+        image: workspace-load-service:latest
         state: started
         restart_policy: always
         platform: linux/amd64
@@ -77,13 +77,11 @@
         env:
           NANOME_SERVICE_PORT: '8989'
           NANOME_SERVICE_API_URL: http://localhost/query
-        # env_file: "{{ host_env_file }}"
         volumes:
           - workspace-load-service:/data
-        network_mode: host
 
     - name: Assert Docker container running
-      shell: docker ps | grep workspace-api
+      shell: docker ps | grep workspace-load-service
       register: container_status
       failed_when: container_status.rc != 0
       changed_when: container_status.rc == 0

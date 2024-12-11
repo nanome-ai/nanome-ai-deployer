@@ -73,7 +73,7 @@
         restart_policy: always
         platform: linux/amd64
         ports:
-          - "{{ port }}:8000"
+          - "{{ port }}:80"
         env:
           HTTPS: "{{ https_enabled | string }}"
           AUTH_API: "https://api.nanome.ai"
@@ -82,8 +82,7 @@
           ENV: "dev"
         # env_file: "{{ host_env_file }}"
         volumes:
-          - workspace-api:/app/data
-        network_mode: host
+          - workspace-api:/data
 
     - name: Assert Docker container running
       shell: docker ps | grep workspace-api
