@@ -2,7 +2,6 @@
 
 ## Infrastructure
 - MARA server (Debian or Redhat based)
-- Tool Server (Debian or Redhat based)
 - Photon Server (Windows)
 
 
