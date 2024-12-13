@@ -86,45 +86,6 @@ def collect_aws_credentials(existing_creds: dict):
     return credentials
 
 
-def configure_aws_credentials(inventory_filepath):
-    # Get existing AWS credentials from tool server
-    existing_aws_creds = retrieve_aws_credentials_from_toolserver(inventory_filepath)
-    if existing_aws_creds:
-        # If there are existing AWS credentials, ask the user if they want to update them
-        overwrite_input = None
-        while overwrite_input not in ['1', '2']:
-            overwrite_input = input((
-                "Your server already has AWS credentials added.\n"
-                "How do you want to proceed?\n"
-                "1. Use existing credentials\n"
-                "2. Update values\n\n"
-                "Make a selection (1|2): "
-            ))
-        update_credentials = overwrite_input == '2'
-    else:
-        update_credentials = True
-
-    if update_credentials:
-        # Collect AWS credentials
-        credentials = collect_aws_credentials(existing_aws_creds)
-
-        # Run Ansible Playbook
-        playbook_path = os.path.join(PLAYBOOKS_DIR, 'aws_configure.yaml')
-        extra_vars = json.dumps(credentials)
-        result = subprocess.run([
-            'ansible-playbook',
-            playbook_path,
-            '-i', inventory_filepath,
-            '--extra-vars', extra_vars,
-            '--limit', 'mara-servers',
-            '-b'
-        ])
-        print(result.stdout)
-        if result.returncode != 0:
-            print("An error occurred:")
-            print(result.stderr)
-
-
 def generate_random_password(length=16):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for i in range(length))
