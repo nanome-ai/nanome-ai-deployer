@@ -8,20 +8,20 @@
         state: present
       when: ansible_os_family == "RedHat"
 
-    - name: Run aws configure (set AWS access key)
+    - name: Run aws configure (Linux)
       shell: |
         aws configure set aws_access_key_id {{ aws_access_key }} --profile default
-      become_user: "{{ ansible_user }}"
-
-    - name: Run aws configure (set AWS secret access key)
-      shell: |
         aws configure set aws_secret_access_key {{ aws_secret_key }} --profile default
-      become_user: "{{ ansible_user }}"
-
-    - name: Run aws configure (set AWS default region)
-      shell: |
         aws configure set region {{ region }} --profile default
       become_user: "{{ ansible_user }}"
+      when: ansible_os_family != "Windows"
+
+    - name: Run aws configure (Windows)
+      win_shell: |
+        aws configure set aws_access_key_id {{ aws_access_key }} --profile default
+        aws configure set aws_secret_access_key {{ aws_secret_key }} --profile default
+        aws configure set region {{ region }} --profile default
+      when: ansible_os_family == "Windows"
 
     - name: Verify AWS CLI configuration
       shell: aws sts get-caller-identity
