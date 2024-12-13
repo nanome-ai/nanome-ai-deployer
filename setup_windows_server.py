@@ -65,7 +65,17 @@ def gather_windows_host_info():
 
 
 def main():
-    print("\nLet's set up your Photon Server!\n")
+    print(
+        "\nLet's set up your Windows Server.\n"
+        "This script will download and configure Photon, which manages multiplayer networking for Nanome.\n"
+        "Steps:\n"
+        "\tAccept credentials to access your Windows Server via WinRM (host, username, password)\n"
+        "\tInstall Python, AWSCLI, \n"
+        "\tAccept AWS credentials for retrieving Photon executable.\n"
+        "\tDownload and install Photon Server.\n\n"
+    )
+    input('Press any key to continue')
+    print('\n')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     # Determine if we need to ask for windows server configurations
     server_config_actions = None
