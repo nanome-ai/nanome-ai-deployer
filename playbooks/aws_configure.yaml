@@ -1,7 +1,6 @@
 ---
 - name: Configure AWS CLI using aws configure command
-  hosts: mara-servers
-  become: true
+  hosts: mara-servers,windows
   tasks:
     - name: Install AWS CLI if not installed
       yum:

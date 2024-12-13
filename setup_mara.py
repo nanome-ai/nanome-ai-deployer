@@ -116,6 +116,7 @@ def configure_aws_credentials(inventory_filepath):
             playbook_path,
             '-i', inventory_filepath,
             '--extra-vars', extra_vars,
+            '--limit', 'mara-servers'
         ])
         print(result.stdout)
         if result.returncode != 0:
