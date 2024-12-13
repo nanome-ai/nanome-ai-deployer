@@ -97,18 +97,27 @@ def main():
         awscli_playbook_path,
         '-i', inventory_filepath,
         '-vvv',
+        '--limit', 'windows'
     ]
     subprocess.run(cmd)
 
-    # configure awscli
-    awscli_playbook_path = os.path.join(PLAYBOOKS_DIR, 'aws_configure.yaml')
-    
+    # Install Python 
+    python_playbook_path = os.path.join(PLAYBOOKS_DIR, 'install_python_windows.yaml')
+    cmd = [
+        'ansible-playbook',
+        python_playbook_path,
+        '-i', inventory_filepath,
+    ]
+    subprocess.run(cmd)
+
+    # Configure awscli
+    configure_awscli_playbook_path = os.path.join(PLAYBOOKS_DIR, 'aws_configure.yaml')
     existing_creds = {}
     credentials = collect_aws_credentials(existing_creds)
     extra_vars = json.dumps(credentials)
     cmd = [
         'ansible-playbook',
-        awscli_playbook_path,
+        configure_awscli_playbook_path,
         '-i', inventory_filepath,
         '--extra-vars', extra_vars,
         '-vvv',

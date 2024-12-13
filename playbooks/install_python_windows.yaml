@@ -1,0 +1,28 @@
+---
+- name: Install Python on Windows Server
+  hosts: windows
+  tasks:
+    - name: Ensure Python is not already installed
+      win_command: python --version
+      register: python_check
+      failed_when: false
+
+    - name: Download Python installer
+      win_get_url:
+        url: "https://www.python.org/ftp/python/3.11.6/python-3.11.6-amd64.exe"
+        dest: "C:\\Users\\Administrator\\Desktop\\python-installer.exe"
+      when: python_check.rc != 0
+
+    - name: Install Python
+      win_command: "C:\\Users\\Administrator\\Desktop\\python-installer.exe /quiet InstallAllUsers=1 PrependPath=1"
+      args:
+        creates: "C:\\Python311\\python.exe"
+      when: python_check.rc != 0
+
+    - name: Verify Python installation
+      win_command: python --version
+      register: python_version
+
+    - name: Display installed Python version
+      debug:
+        msg: "Installed Python version: {{ python_version.stdout }}"
