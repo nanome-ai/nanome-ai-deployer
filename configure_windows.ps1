@@ -122,3 +122,4 @@ Install-Python
 Install-AWSCLI
 aws configure
 Configure-Photon
+Write-Host "Completed"
