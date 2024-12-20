@@ -12,11 +12,15 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
 def gather_https_info():
-    https_input = input("\nDo you want to configure https?\n"
+    https_input = None
+    while https_input not in ['1', '2']:
+        https_input = input(
+            "\nDo you want to configure https?\n"
             "1. Yes\n"
             "2. No\n"
-            "Make a selection (1|2): ")
-    https_enabled = https_input.lower() == 'yes'
+            "Make a selection (1|2): "
+        )
+    https_enabled = https_input == '1'
 
     certs_path = None
     if https_enabled:
@@ -264,6 +268,18 @@ def main():
         "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
     )
     input('Press any key to continue')
+
+
+    setup_type = None
+    while setup_type not in ['1', '2']:
+        setup_type = input((
+            "Is this a MARA only deployment, or is this a full Nanome-AI install?\n"
+            "1. MARA only\n"
+            "2. Nanome-AI deploy (Includes workspace applications)\n\n"
+            "Make a selection (1|2): "
+        ))
+    install_workspace_apps = setup_type == '2'
+
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     mara_host_config = gather_https_info()
     if not os.path.exists(inventory_filepath):
@@ -274,11 +290,12 @@ def main():
         })
         create_inventory_file(inventory_filepath, mara_host_config)
 
-    print("Deploying Workspace API...")
-    configure_workspace_api(inventory_filepath)
-    
-    print("Deploying Workspace Load Service...")
-    configure_workspace_load_service(inventory_filepath)
+    if install_workspace_apps:
+        print("Deploying Workspace API...")
+        configure_workspace_api(inventory_filepath)
+        
+        print("Deploying Workspace Load Service...")
+        configure_workspace_load_service(inventory_filepath)
 
     # Setup tool-server deployment
     api_key_file = os.path.join(os.path.dirname(__file__), 'tool_server_api_key.txt')

@@ -11,38 +11,6 @@ import yaml
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
-def gather_user_input():
-    # Get ip address of remote server
-    ip_address = input("Enter the server IP address: ")
-    # Ask for the username to log into the server
-    username = input("Enter the username for SSH login: ")
-    # Ask for the path to the private key file
-    private_key_file = input("Enter the path to your Identity key file (e.g., /home/user/.ssh/id_rsa): ")
-
-    # Ensure that the private key file exists
-    if not os.path.isfile(private_key_file):
-        print(f"Error: The private key file {private_key_file} does not exist.")
-        return
-
-    https_input = input("Do you want to configure https? (yes/no): ")
-    https_enabled = https_input.lower() == 'yes'
-
-    certs_path = None
-    if https_enabled:
-        certs_path = input("Enter the path to the directory where the SSL certificates are stored: ")
-
-    host_config = {
-        'ansible_host': ip_address,
-        'ansible_user': username,
-        'ansible_ssh_private_key_file': private_key_file,
-        'https_enabled': https_enabled
-    }
-    if https_enabled:
-        host_config['certs_path'] = certs_path
-
-    return host_config
-
-
 def create_inventory_file(inventory_file, mara_host_config):
     # Construct the inventory structure
     inventory = {
