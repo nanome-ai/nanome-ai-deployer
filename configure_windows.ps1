@@ -1,3 +1,7 @@
+function Refresh-Path {
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
+}
+
 function Install-Python {
     Write-Host "Installing Python"
     # Variables
@@ -33,6 +37,7 @@ function Install-Python {
         Start-Process -FilePath $installerPath -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
 
         # Verify Python installation
+        Refresh-Path
         if (Test-Path $pythonExePath) {
             $installedVersion = python --version
             Write-Host "Python installed successfully. Version: $installedVersion"
@@ -70,6 +75,7 @@ function Install-AWSCLI {
     Write-Host "Installing AWS CLI..."
     Start-Process -FilePath "msiexec.exe" -ArgumentList "/i $awsCliInstallerPath /quiet" -Wait -NoNewWindow
 
+    Refresh-Path
     Write-Host "Verifying AWS CLI installation..."
     try {
         $awsVersion = aws --version
@@ -108,10 +114,10 @@ function Configure-Photon {
     } else {
         Write-Host "Photon zip file already exists. Skipping download and extraction."
     }
-    # Add code to start the Photon service here
 }
 
 # Main script execution
 Install-Python
 Install-AWSCLI
+aws configure
 Configure-Photon
