@@ -1,12 +1,14 @@
 # Nanome AI Deployment Scripts
 
 ## Infrastructure
+
 - MARA server (Debian or Redhat based)
 - Photon Server (Windows)
 
+## Configuring MARA Server
 
-## Configuration
-1) SSH into MARA Server<br>
+1) SSH into MARA Server
+
 ```sh
 ssh username@mara-server-host
 ```
@@ -70,5 +72,21 @@ python install_prereqs.py
 9) Run install scripts
 ```sh
 python setup_mara.py
-python setup_windows_server.py
 ```
+
+## Configuring Windows Server
+
+This Repo contains a Powershell script `configure_windows.ps1` for downloading and installing Photon on the Windows Server
+
+1) Connect to your Windows server via RDP
+
+2) Copy `configure_windows.ps1` onto the Desktop of your Windows Server. This is currently a manual process, you may have to create a new file, and copy contents directly.
+
+3) In Powershell, run the script. It will ask you for the AWS credentials provided to you by Nanome
+
+```sh
+cd Desktop
+./configure_windows.ps1
+```
+
+4) Once the script has completed, open the Photon Control Panel, and start service. (To be documented later)
