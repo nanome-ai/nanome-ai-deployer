@@ -7,7 +7,6 @@ function Install-Python {
     # Variables
     $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.6/python-3.11.6-amd64.exe"
     $installerPath = "C:\Users\Administrator\Desktop\python-installer.exe"
-    $pythonExePath = "C:\Python311\python.exe"
 
     # Function to check if Python is installed
     function Check-Python {
@@ -38,7 +37,7 @@ function Install-Python {
 
         # Verify Python installation
         Refresh-Path
-        if (Test-Path $pythonExePath) {
+        if (Check-Python) {
             $installedVersion = python --version
             Write-Host "Python installed successfully. Version: $installedVersion"
         } else {
@@ -50,6 +49,7 @@ function Install-Python {
     }
 
 }
+
 
 function Install-AWSCLI {
     Write-Host "Checking if AWS CLI is already installed..."
@@ -87,6 +87,7 @@ function Install-AWSCLI {
 
     Write-Host "AWS CLI installation completed successfully."
 }
+
 
 function Configure-Photon {
     $photonS3 = "s3://nanome/enterprise_deployment/Photon-OnPremise-Server-SDK_v4-0-29-11263.zip"
