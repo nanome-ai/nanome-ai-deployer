@@ -4,56 +4,10 @@ import os
 import random
 import string
 import subprocess
-import tempfile
 import yaml
 
-import cli
-from cli.utils import PLAYBOOKS_DIR
+from cli.utils import PLAYBOOKS_DIR, create_inventory_file, collect_aws_credentials
 from cli.mara import retrieve_aws_credentials_from_toolserver
-
-
-def create_inventory_file(inventory_file, mara_host_config):
-    # Construct the inventory structure
-    inventory = {
-        'myhosts': {
-            'hosts': {
-                'mara-servers': mara_host_config,
-            }
-        }
-    }
-
-    # Define the path to save the inventory file
-    # Write the YAML structure to the file
-    with open(inventory_file, 'w') as file:
-        yaml.dump(inventory, file, default_flow_style=False)
-    print(f"Ansible inventory file has been created: {inventory_file}")
-    return inventory_file
-
-
-def collect_aws_credentials(existing_creds: dict = None):
-    existing_creds = existing_creds or {}
-    print("Please provide the AWS credentials given to you by Nanome:")
-    access_key = existing_creds.get('aws_access_key', '')
-    secret_key = existing_creds.get('aws_secret_key', '')
-    masked_access_key = f"{'*' * len(access_key[:-4])}{access_key[-4:]}"
-    masked_secret_key = f"{'*' * len(secret_key[:-4])}{secret_key[-4:]}"
-
-    aws_access_key_id = input((
-        f"Current AWS Access Key ID: {masked_access_key or 'None'}\n"
-        f"New AWS Access Key ID: "
-    ))
-
-    aws_secret_access_key_id = getpass.getpass((
-        f"Current AWS Secret Access Key: {masked_secret_key or 'None'}\n"
-        f"New AWS Secret Access Key ID: "
-    ))
-    aws_region = 'us-west-1'
-    credentials = {
-        "aws_access_key": aws_access_key_id,
-        "aws_secret_key": aws_secret_access_key_id,
-        "region": aws_region
-    }
-    return credentials
 
 
 def configure_aws_credentials(inventory_filepath):
@@ -94,11 +48,6 @@ def configure_aws_credentials(inventory_filepath):
             print(result.stderr)
 
 
-def generate_random_password(length=16):
-    characters = string.ascii_letters + string.digits
-    return ''.join(random.choice(characters) for i in range(length))
-
-
 def main():
     print((
         "\nThanks for using MARA!\n\n"
@@ -107,6 +56,7 @@ def main():
         "\t- Install AWSCLI on this server, and configure AWS credentials.\n"
         
     ))
+    input('Press ENTER to continue...')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     if not os.path.exists(inventory_filepath):
         mara_host_config = {
@@ -114,7 +64,6 @@ def main():
             'ansible_user': getpass.getuser(),
             'ansible_connection': 'local'
         }
-        print("\nSetting up the Tool Server")
         create_inventory_file(inventory_filepath, mara_host_config)
 
     print("Installing AWS CLI on your servers...")
