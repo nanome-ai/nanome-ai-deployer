@@ -2,7 +2,7 @@
 
 ## Infrastructure
 
-- MARA server (Debian or Redhat based)
+- MARA server (Ubuntu)
 - Photon Server (Windows)
 
 ## Configuring MARA Server
@@ -16,15 +16,15 @@ ssh username@mara-server-host
 2) Install git
 
 ```sh
-# Redhat based system
-sudo yum update
-sudo yum install git
-```
-
-```sh
 # Debian based system
 sudo apt-get update
 sudo apt install git
+```
+
+```sh
+# Redhat based system
+sudo yum update
+sudo yum install git
 ```
 
 3) Clone install repo scripts
@@ -41,12 +41,6 @@ cd nanome-ai-deployer
 5) Set up Python and pip
 
 ```sh
-# Redhat based system
-sudo yum install python
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3
-```
-
-```sh
 # Debian based system
 sudo apt install python3
 
@@ -56,6 +50,11 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
+```sh
+# Redhat based system
+sudo yum install python
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3
+```
 
 6) Install Requirements
 ```sh
@@ -71,7 +70,13 @@ python install_prereqs.py
 
 9) Run install scripts
 ```sh
+# MARA only deployments
 python setup_mara.py
+```
+OR
+```sh
+# Nanome AI deployment
+python setup_nanome_ai.py
 ```
 
 ## Configuring Windows Server
