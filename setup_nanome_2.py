@@ -259,14 +259,14 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
 
 def main():
     print(
-        "\nThanks for using MARA! Let's get started setting up your server!\n"
+        "\nThanks for using Nanome AI! Let's get started setting up your server!\n"
         "This script will download and run 4 docker containers:\n"
         "\t- Workspace API: Acts as a data store of Nanome workspaces.\n"
         "\t- Workspace Load Service: Contains business logic for rendering structure files as a Nanome workspace.\n"
         "\t- Tool Server: Runs computations for MARA workflows.\n"
         "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
     )
-    input('Press any key to continue')
+    input('Press ENTER to continue')
 
 
     setup_type = None

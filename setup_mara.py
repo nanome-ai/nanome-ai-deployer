@@ -12,7 +12,7 @@ def main():
         "\t- Tool Server: Runs computations for MARA workflows.\n"
         "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
     )
-    input('Press any key to continue')
+    input('Press ENTER to continue')
 
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     mara_host_config = utils.gather_https_info()
