@@ -63,7 +63,7 @@ def configure_tool_server(inventory_filepath, api_key_file=''):
         api_key = input("Enter the API Key: ")
 
     # Write .env file
-    env_file = os.path.join(os.path.dirname(__file__), '.env.toolserver')
+    env_file = os.path.join(os.path.dirname(__file__), '..', '.env.toolserver')
     with open(env_file, 'w') as f:
         f.write(f'API_KEY={api_key}')
         # write api key to local file for later use
@@ -80,7 +80,7 @@ def configure_tool_server(inventory_filepath, api_key_file=''):
     if api_key:
         cmd.extend(['--extra-vars', f'env_file={env_file}'])
     subprocess.run(cmd)
-    os.remove(env_file)
+    # os.remove(env_file)
 
 
 def configure_mara_server(inventory_filepath, tool_server_api_key):
@@ -122,7 +122,7 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
     tool_server_url = 'http://127.0.0.1:8001'
     workspace_api_url = 'http://127.0.0.1:8002'
     # Write to .env file
-    env_file = os.path.join(os.path.dirname(__file__), '.env.maraserver')
+    env_file = os.path.join(os.path.dirname(__file__), '..', '.env.maraserver')
 
     env_var_values.update({
         'LLM_API_KEY': llm_key,
@@ -143,5 +143,5 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
         '--extra-vars', f'env_file={env_file}'
     ]
     subprocess.run(cmd)
-    os.remove(env_file)
+    # os.remove(env_file)
 
