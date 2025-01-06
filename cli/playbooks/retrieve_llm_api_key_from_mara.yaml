@@ -1,5 +1,5 @@
 ---
-- name: Retrieve LLM_LLM_API_KEY from .env file
+- name: Retrieve LLM_API_KEY from .env file
   hosts: mara-servers
   tasks:
     - set_fact:
