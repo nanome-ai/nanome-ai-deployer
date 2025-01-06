@@ -11,7 +11,7 @@ services:
     networks:
       - nanome-ai-network
     volumes:
-      - mara-ai:/app/data
+      - mara-ai-volume:/app/data
     ports:
       - 8000
 
@@ -38,6 +38,8 @@ services:
       - nanome-ai-network
     ports:
       - 8002
+    volumes:
+      - workspace-api-volume:/data
 
   workspace-load-service:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest
@@ -65,4 +67,5 @@ networks:
 
 volumes:
   mara-tool-volume:
-  mara-ai:
+  mara-ai-volume:
+  workspace-api-volume:
