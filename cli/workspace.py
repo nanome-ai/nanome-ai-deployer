@@ -1,6 +1,3 @@
-import os
-import subprocess
-from .utils import PLAYBOOKS_DIR
 
 def configure_workspace_api(inventory_filepath):
     """TODO: figure out what settings need to be set interactively."""
