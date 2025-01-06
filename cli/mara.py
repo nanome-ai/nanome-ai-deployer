@@ -71,15 +71,15 @@ def configure_tool_server(inventory_filepath, api_key_file=''):
             with open(api_key_file, 'w') as f:
                 f.write(api_key)
     # Run Ansible Playbook
-    playbook_path = os.path.join(PLAYBOOKS_DIR, 'deploy_tool_server.yaml')
-    cmd = [
-        'ansible-playbook',
-        playbook_path,
-        '-i', inventory_filepath,
-    ]
-    if api_key:
-        cmd.extend(['--extra-vars', f'env_file={env_file}'])
-    subprocess.run(cmd)
+    # playbook_path = os.path.join(PLAYBOOKS_DIR, 'deploy_tool_server.yaml')
+    # cmd = [
+    #     'ansible-playbook',
+    #     playbook_path,
+    #     '-i', inventory_filepath,
+    # ]
+    # if api_key:
+    #     cmd.extend(['--extra-vars', f'env_file={env_file}'])
+    # subprocess.run(cmd)
     # os.remove(env_file)
 
 
@@ -135,13 +135,13 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
         f.write(env_content)
 
     # Run Ansible Playbook
-    playbook_path = os.path.join(PLAYBOOKS_DIR, 'deploy_mara.yaml')
-    cmd = [
-        'ansible-playbook',
-        playbook_path,
-        '-i', inventory_filepath,
-        '--extra-vars', f'env_file={env_file}'
-    ]
-    subprocess.run(cmd)
+    # playbook_path = os.path.join(PLAYBOOKS_DIR, 'deploy_mara.yaml')
+    # cmd = [
+    #     'ansible-playbook',
+    #     playbook_path,
+    #     '-i', inventory_filepath,
+    #     '--extra-vars', f'env_file={env_file}'
+    # ]
+    # subprocess.run(cmd)
     # os.remove(env_file)
 
