@@ -21,12 +21,6 @@ sudo apt-get update
 sudo apt install git
 ```
 
-```sh
-# Redhat based system
-sudo yum update
-sudo yum install git
-```
-
 3) Clone install repo scripts
 ```sh
 git clone https://github.com/nanome-ai/nanome-ai-deployer
@@ -48,12 +42,6 @@ sudo apt install python3
 sudo apt install python3-venv
 python3 -m venv venv
 source venv/bin/activate
-```
-
-```sh
-# Redhat based system
-sudo yum install python
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3
 ```
 
 6) Install Requirements

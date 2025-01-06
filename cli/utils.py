@@ -56,7 +56,8 @@ def create_inventory_file(inventory_file, mara_host_config):
     return inventory_file
 
 
-def collect_aws_credentials(existing_creds: dict):
+def collect_aws_credentials(existing_creds: dict = None):
+    existing_creds = existing_creds or {}
     print("Please provide the AWS credentials given to you by Nanome:")
     access_key = existing_creds.get('aws_access_key', '')
     secret_key = existing_creds.get('aws_secret_key', '')
