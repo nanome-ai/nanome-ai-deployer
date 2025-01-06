@@ -2,29 +2,8 @@ import getpass
 import os
 import subprocess
 import tempfile
-import yaml
 
 from .utils import generate_random_password, PLAYBOOKS_DIR
-
-
-def retrieve_aws_credentials_from_toolserver(inventory_filepath):
-    playbook_path = os.path.join(PLAYBOOKS_DIR, 'retrieve_aws_creds_from_toolserver.yaml')
-    aws_creds = {}
-    with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-        cmd = [
-            'ansible-playbook',
-            playbook_path,
-            '-i', inventory_filepath,
-            '--extra-vars', f'output_yaml={f.name}'
-        ]
-        result = subprocess.run(cmd)
-        if result.returncode != 0:
-            print("An error occurred:")
-            print(result.stderr)
-            return aws_creds
-        with open(f.name, 'r') as f:
-            aws_creds = yaml.safe_load(f)
-        return aws_creds
 
 
 def retrieve_api_key_from_toolserver(inventory_filepath):

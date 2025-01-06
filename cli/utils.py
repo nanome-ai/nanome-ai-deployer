@@ -4,7 +4,6 @@ import random
 import string
 import yaml
 
-__all__ = ['generate_random_password', 'gather_https_info', 'create_inventory_file', 'collect_aws_credentials']
 
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
@@ -79,4 +78,34 @@ def collect_aws_credentials(existing_creds: dict = None):
         "aws_secret_key": aws_secret_access_key_id,
         "region": aws_region
     }
+    return credentials
+
+
+def get_existing_aws_credentials():
+    """Find existing AWS credentials configured on the server."""
+    credentials = {}
+    # Check environment variables
+    access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    
+    if access_key and secret_key:
+        credentials["aws_access_key"] = access_key
+        credentials["aws_secret_key"] = secret_key
+        return credentials
+
+    # Check AWS credentials file
+    aws_credentials_path = os.path.expanduser("~/.aws/credentials")
+    if os.path.exists(aws_credentials_path):
+        try:
+            with open(aws_credentials_path, "r") as cred_file:
+                lines = cred_file.readlines()
+                for line in lines:
+                    if line.strip().startswith("aws_access_key_id"):
+                        credentials["aws_access_key"] = line.split("=", 1)[1].strip()
+                    if line.strip().startswith("aws_secret_access_key"):
+                        credentials["aws_secret_key"] = line.split("=", 1)[1].strip()
+                if "access_key" in credentials and "secret_key" in credentials:
+                    return credentials
+        except Exception as e:
+            print(f"Error reading AWS credentials file: {e}")
     return credentials

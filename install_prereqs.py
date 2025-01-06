@@ -1,18 +1,14 @@
 import getpass
 import json
 import os
-import random
-import string
 import subprocess
-import yaml
 
-from cli.utils import PLAYBOOKS_DIR, create_inventory_file, collect_aws_credentials
-from cli.mara import retrieve_aws_credentials_from_toolserver
+from cli.utils import PLAYBOOKS_DIR, create_inventory_file, collect_aws_credentials, get_existing_aws_credentials
 
 
 def configure_aws_credentials(inventory_filepath):
     # Get existing AWS credentials from tool server
-    existing_aws_creds = retrieve_aws_credentials_from_toolserver(inventory_filepath)
+    existing_aws_creds = get_existing_aws_credentials()
     if existing_aws_creds:
         # If there are existing AWS credentials, ask the user if they want to update them
         overwrite_input = None
@@ -88,7 +84,7 @@ def main():
 
     print('AWSCLI has been installed.')
 
-    print("Docker has been Installed! Note you may need to restart this server for changes to take effect.")
+    print("Docker has been installed! Note you may need to restart this server for changes to take effect.")
 
 
 if __name__ == "__main__":
