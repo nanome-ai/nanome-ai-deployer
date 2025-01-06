@@ -82,7 +82,6 @@ def main():
     configure_aws_credentials(inventory_filepath)
 
     print('AWSCLI has been installed.')
-
     print("Docker has been installed! Note you may need to restart this server for changes to take effect.")
 
 
