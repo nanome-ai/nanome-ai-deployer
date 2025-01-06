@@ -1,5 +1,7 @@
 import getpass
 import os
+import subprocess
+
 from cli import utils, mara, workspace
 import enums
 
@@ -17,6 +19,11 @@ def main():
     )
     input('Press ENTER to continue')
 
+    cmd = (
+        'aws ecr get-login-password --region us-west-1 '
+        '| docker login --username AWS --password-stdin 441665557124.dkr.ecr.us-west-1.amazonaws.com'
+    )
+    subprocess.run(cmd, shell=True)
 
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     mara_host_config = utils.gather_https_info()
@@ -34,19 +41,18 @@ def main():
     print("Deploying Workspace Load Service...")
     workspace.configure_workspace_load_service(inventory_filepath)
 
-    # Setup tool-server deployment
+    # Setup tool-server .env file
     print("\nCollecting Tool Server Values...\n")
     tool_server_env_file = enums.TOOL_SERVER_ENV_FILE
     existing_tool_server_env = utils.read_env_file(tool_server_env_file)
-    tool_server_api_key = existing_tool_server_env.get('API_KEY', None)
-
     tool_server_env = mara.configure_tool_server(existing_tool_server_env)
     with open(tool_server_env_file, 'w') as f:
         for key, value in tool_server_env.items():
             line = f'{key}={value}\n'
             f.write(line)
-    
-    # Configure the mara deployment
+
+    # Configure the mara .env file
+    tool_server_api_key = tool_server_env.get('API_KEY', None)
     print('\nConfiguring the MARA Server...\n')
     mara_env_file = enums.MARA_ENV_FILE
     existing_mara_env = utils.read_env_file(mara_env_file)
