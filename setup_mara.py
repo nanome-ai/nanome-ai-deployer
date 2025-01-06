@@ -1,3 +1,4 @@
+import enums
 import getpass
 import os
 from cli import utils, mara
@@ -25,22 +26,23 @@ def main():
         utils.create_inventory_file(inventory_filepath, mara_host_config)
 
     # Setup tool-server deployment
-    print("Collecting Tool Server Values...")
-    tool_server_env_file = os.path.join(os.path.dirname(__file__), '.env.toolserver')
+    print("\nCollecting Tool Server Values...\n")
+    tool_server_env_file = enums.TOOL_SERVER_ENV_FILE
     existing_tool_server_env = utils.read_env_file(tool_server_env_file)
-    tool_server_env = mara.configure_tool_server(inventory_filepath, existing_tool_server_env)
+    tool_server_api_key = existing_tool_server_env.get('API_KEY', None)
+
+    tool_server_env = mara.configure_tool_server(existing_tool_server_env)
     with open(tool_server_env_file, 'w') as f:
         for key, value in tool_server_env.items():
             line = f'{key}={value}'
             f.write(line)
-    tool_server_api_key = tool_server_env['API_KEY']
+    
     # Configure the mara deployment
-
     print('\nConfiguring the MARA Server...\n')
-    mara_env_file = os.path.join(os.path.dirname(__file__), '.env.maraserver')
-    mara_env = mara.configure_mara_server(inventory_filepath, tool_server_api_key)
+    mara_env_file = enums.MARA_ENV_FILE
+    existing_mara_env = utils.read_env_file(mara_env_file)
+    mara_env = mara.configure_mara_server(existing_mara_env, tool_server_api_key)
     mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
-
     with open(mara_env_file, 'w') as f:
         for key, value in mara_env.items():
             line = f'{key}={value}'
@@ -50,6 +52,7 @@ def main():
         "\t- MARA: 127.0.0.1:8000\n"
         "\t- Tool Server: 127.0.0.1:8001\n"
     )
+
 
 if __name__ == "__main__":
     main()
