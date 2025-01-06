@@ -5,6 +5,7 @@ services:
     environment:
       - VIRTUAL_HOST=mara-ai.local
       - TOOL_SERVER_URL=http://mara-tool-server:8001
+      - NANOME_SERVICES_URL=http://workspace-api:8002
     env_file: .env.maraserver
     depends_on:
       - mara-tool-server

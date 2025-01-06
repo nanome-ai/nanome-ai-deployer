@@ -42,7 +42,8 @@ def retrieve_llm_api_key_from_mara(inventory_filepath):
         return llm_api_key
 
 
-def configure_tool_server(inventory_filepath, api_key_file=''):
+def configure_tool_server(inventory_filepath, existing_env=None) -> dict:
+    env = existing_env or {}
     api_key_selection = None
     while api_key_selection not in ['1', '2', '3']:
         api_key_selection = input((
@@ -61,15 +62,16 @@ def configure_tool_server(inventory_filepath, api_key_file=''):
         api_key = retrieve_api_key_from_toolserver(inventory_filepath)
     elif api_key_selection == '3':
         api_key = input("Enter the API Key: ")
-
+    env['API_KEY'] = api_key
+    return env
     # Write .env file
-    env_file = os.path.join(os.path.dirname(__file__), '..', '.env.toolserver')
-    with open(env_file, 'w') as f:
-        f.write(f'API_KEY={api_key}')
-        # write api key to local file for later use
-        if api_key_file:
-            with open(api_key_file, 'w') as f:
-                f.write(api_key)
+    # env = os.path.join(os.path.dirname(__file__), '..', '.env.toolserver')
+    # with open(env_file, 'w') as f:
+    #     f.write(f'API_KEY={api_key}')
+    #     # write api key to local file for later use
+    #     if api_key_file:
+    #         with open(api_key_file, 'w') as f:
+    #             f.write(api_key)
     # Run Ansible Playbook
     # playbook_path = os.path.join(PLAYBOOKS_DIR, 'deploy_tool_server.yaml')
     # cmd = [
@@ -83,18 +85,18 @@ def configure_tool_server(inventory_filepath, api_key_file=''):
     # os.remove(env_file)
 
 
-def configure_mara_server(inventory_filepath, tool_server_api_key):
+def configure_mara_server(inventory_filepath, tool_server_api_key) -> dict:
     azure_provider = input((
         'Will you be using a Microsoft Azure-hosted LLM such as GPT4?\n'
         '1. Yes\n'
         '2. No\n\n'
         'Make a selection (1|2): '
     ))
-    env_var_values = {}
+    env = {}
     if azure_provider == '1':
-        env_var_values['OPENAI_API_TYPE'] = 'azure'
+        env['OPENAI_API_TYPE'] = 'azure'
         llm_url = input("Enter your Azure LLM API URL (e.g https://acme.azure.com/v1): ")
-        env_var_values['LLM_API_URL'] = llm_url
+        env['LLM_API_URL'] = llm_url
 
     exisitng_llm_key = retrieve_llm_api_key_from_mara(inventory_filepath)
     llm_key_option = None
@@ -119,21 +121,17 @@ def configure_mara_server(inventory_filepath, tool_server_api_key):
                 "New LLM_API_KEY: "
             ))
 
-    tool_server_url = 'http://127.0.0.1:8001'
-    workspace_api_url = 'http://127.0.0.1:8002'
-    # Write to .env file
-    env_file = os.path.join(os.path.dirname(__file__), '..', '.env.maraserver')
-
-    env_var_values.update({
+    env.update({
         'LLM_API_KEY': llm_key,
-        'TOOL_SERVER_URL': tool_server_url,
-        'TOOL_SERVER_KEY': tool_server_api_key,
-        'NANOME_SERVICES_URL': workspace_api_url
+        'TOOL_SERVER_KEY': tool_server_api_key
     })
-    with open(env_file, 'w') as f:
-        env_content = '\n'.join([f'{k}={v}' for k, v in env_var_values.items()])
-        f.write(env_content)
+    return env
 
+    # Write to .env file
+    # env_file = os.path.join(os.path.dirname(__file__), '..', '.env.maraserver')
+    # with open(env_file, 'w') as f:
+    #     env_content = '\n'.join([f'{k}={v}' for k, v in env.items()])
+    #     f.write(env_content)
     # Run Ansible Playbook
     # playbook_path = os.path.join(PLAYBOOKS_DIR, 'deploy_mara.yaml')
     # cmd = [
