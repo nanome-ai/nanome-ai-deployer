@@ -43,7 +43,7 @@ def main():
     tool_server_env = mara.configure_tool_server(existing_tool_server_env)
     with open(tool_server_env_file, 'w') as f:
         for key, value in tool_server_env.items():
-            line = f'{key}={value}'
+            line = f'{key}={value}\n'
             f.write(line)
     
     # Configure the mara deployment
@@ -54,7 +54,7 @@ def main():
     mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
     with open(mara_env_file, 'w') as f:
         for key, value in mara_env.items():
-            line = f'{key}={value}'
+            line = f'{key}={value}\n'
             f.write(line)
 
     print(
