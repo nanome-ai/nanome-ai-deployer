@@ -78,7 +78,6 @@ def main():
         install_docker_playbook
     ])
 
-
     # Add AWS credentials to the servers
     configure_aws_credentials(inventory_filepath)
 
