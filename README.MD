@@ -16,7 +16,6 @@ ssh username@mara-server-host
 2) Install git
 
 ```sh
-# Debian based system
 sudo apt-get update
 sudo apt install git
 ```
@@ -35,7 +34,6 @@ cd nanome-ai-deployer
 5) Set up Python and pip
 
 ```sh
-# Debian based system
 sudo apt install python3
 
 # Set up virtualenv
@@ -56,7 +54,13 @@ python install_prereqs.py
 
 8) Reboot you MARA server, so that Docker changes take effect.
 
-9) Run install scripts
+9) Reactivate virtualenv
+```sh
+cd nanome-ai-deployer
+source venv/bin/activate
+```
+
+10) Run install scripts
 ```sh
 # MARA only deployments
 python setup_mara.py
