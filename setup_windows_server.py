@@ -74,7 +74,7 @@ def main():
         "\tAccept AWS credentials for retrieving Photon executable.\n"
         "\tDownload and install Photon Server.\n\n"
     )
-    input('Press any key to continue')
+    input('Press ENTER key to continue')
     print('\n')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
     # Determine if we need to ask for windows server configurations

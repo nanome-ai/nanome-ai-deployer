@@ -91,11 +91,8 @@ function Install-AWSCLI {
 
 function Configure-Photon {
     $photonS3 = "s3://nanome/enterprise_deployment/Photon-OnPremise-Server-SDK_v4-0-29-11263.zip"
-    $licenseS3 = "https://nanome.s3.us-west-1.amazonaws.com/enterprise_deployment/simim91296%40gocasin.com.Photon-vX.free.100-ccu.license"
     $photonZipDir = "C:\Users\Administrator\Desktop\photon.zip"
     $photonDir = "C:\Users\Administrator\Desktop\photon"
-    $licenseFile = "C:\Users\Administrator\Desktop\photon\deploy\bin_Win64\photon.license"
-    $photonBinDir = "C:\Users\Administrator\Desktop\photon\Photon-OnPremise-Server-SDK_v4-0-29-11263\deploy\bin_Win64"
 
     if (-Not (Test-Path -Path $photonZipDir)) {
         Write-Host "Photon zip file not found. Downloading from S3..."
