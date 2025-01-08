@@ -3,7 +3,8 @@ services:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest
     # container_name: mara-ai
     environment:
-      - VIRTUAL_HOST=mara-ai.local
+      - VIRTUAL_HOST=mara.54.237.223.184.nip.io
+      - VIRTUAL_PORT=8000
       - TOOL_SERVER_URL=http://mara-tool-server:8001
       - NANOME_SERVICES_URL=http://workspace-api:8002
     env_file: .env.maraserver
@@ -15,12 +16,11 @@ services:
       - mara-ai-volume:/app/data
     ports:
       - 8000
-
   mara-tool-server:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-tool-server-enterprise:latest
     # container_name: mara-tool-server
     environment:
-      - VIRTUAL_HOST=mara-tool-server.local
+      - VIRTUAL_HOST=tool-server.54.237.223.184.nip.io
     env_file: .env.toolserver
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -29,12 +29,11 @@ services:
       - nanome-ai-network
     ports:
       - 8001
-
   nginx-proxy:
     image: jwilder/nginx-proxy:latest
     container_name: nginx-proxy
     ports:
-      - "80:80" # Expose Nginx on port 80
+      - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro # Required for nginx-proxy to access container metadata
     networks:

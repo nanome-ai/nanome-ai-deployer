@@ -6,6 +6,7 @@ services:
     # container_name: workspace-api
     environment:
       - VIRTUAL_HOST=workspace-api.local
+      - VIRTUAL_PORT=8002
     networks:
       - nanome-ai-network
     ports:
@@ -18,6 +19,7 @@ services:
     # container_name: workspace-load-service
     environment:
       - VIRTUAL_HOST=workspace-load-service.local
+      - VIRTUAL_PORT=8003
     networks:
       - nanome-ai-network
     ports:
