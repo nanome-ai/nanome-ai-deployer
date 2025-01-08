@@ -50,7 +50,6 @@ def main():
         "This script will do 2 things:\n"
         "\t- Install Docker on this server.\n"
         "\t- Install AWSCLI on this server, and configure AWS credentials.\n"
-        
     ))
     input('Press ENTER to continue...')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
