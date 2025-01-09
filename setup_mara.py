@@ -6,7 +6,7 @@ from cli import utils, mara
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
-def setup_mara(host=None):
+def setup_mara(host=None, workspace_repo_host=None, workspace_loader_host=None):
 
     if not host:
         # If host is provided, then the user already got a welcome message
@@ -35,12 +35,18 @@ def setup_mara(host=None):
     # Configure the mara .env file
     tool_server_api_key = tool_server_env.get('API_KEY', None)
     print('\nConfiguring the MARA Server...\n')
+    mara_host = f'mara.{host}'
     mara_env_file = enums.MARA_ENV_FILE
     existing_mara_env = utils.read_env_file(mara_env_file)
     mara_env = mara.configure_mara_server(existing_mara_env, tool_server_api_key)
+    mara_env['API_HOST'] = mara_host
     mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
-    mara_host = f'mara.{host}'
+    mara_env['TOOL_SERVER_URL'] = f'http://{tool_server_host}'
     mara_env['VIRTUAL_HOST'] = mara_host
+    if workspace_repo_host:
+        mara_env['WORKSPACE_API_URL'] = f'http://{workspace_repo_host}'
+    if workspace_loader_host:
+        mara_env['NANOME_SERVICES_URL'] = f'http://{workspace_loader_host}'
     utils.write_env_file(mara_env_file, mara_env)
     return mara_env, tool_server_env
 

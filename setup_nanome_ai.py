@@ -1,12 +1,12 @@
 import os
-
 from cli import utils, workspace
 from setup_mara import setup_mara
 from aws_login import login_to_aws
+
 import enums
 
-PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
+PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
 def setup_nanome_ai():
@@ -39,7 +39,11 @@ def setup_nanome_ai():
     utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
 
     # Run Setup MARA script
-    mara_env, tool_server_env = setup_mara(host=host)
+    mara_env, tool_server_env = setup_mara(
+        host=host,
+        workspace_repo_host=workspace_repo_host,
+        workspace_loader_host=loader_host
+    )
 
     # Return environment variables for each 
     return repo_env, load_service_env, mara_env, tool_server_env
