@@ -65,7 +65,6 @@ source venv/bin/activate
 # MARA only deployments
 python setup_mara.py
 ```
-OR
 ```sh
 # Nanome AI deployment
 python setup_nanome_ai.py
@@ -76,7 +75,6 @@ python setup_nanome_ai.py
 # Nanome AI
 docker compose up -d
 ```
-OR
 ```sh
 # MARA only deploy
 docker compose -f docker-compose-mara.yaml up -d
