@@ -4,7 +4,6 @@ services:
   workspace-repo-api:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest
     environment:
-      - VIRTUAL_HOST=${VIRTUAL_HOST-localhost}
       - VIRTUAL_PORT=8002
       - PORT=8002
       - AUTH_API=https://api.nanome.ai
@@ -22,7 +21,6 @@ services:
   workspace-load-service:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest
     environment:
-      - VIRTUAL_HOST=${VIRTUAL_HOST-localhost}
       - VIRTUAL_PORT=8003
       - NANOME_SERVICE_PORT=8003
       - NANOME_SERVICE_API_URL=http://workspace-repo-api

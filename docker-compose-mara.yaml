@@ -2,7 +2,6 @@ services:
   mara-ai:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest
     environment:
-      - VIRTUAL_HOST=${VIRTUAL_HOST-localhost}
       - VIRTUAL_PORT=8000
       - TOOL_SERVER_URL=http://mara-tool-server:8001
       - NANOME_SERVICES_URL=http://workspace-repo-api:8002
@@ -18,8 +17,6 @@ services:
       - 8000
   mara-tool-server:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-tool-server-enterprise:latest
-    environment:
-      - VIRTUAL_HOST=mara-tools.test.nanome.ai
     env_file: .env.toolserver
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
