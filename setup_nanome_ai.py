@@ -1,9 +1,9 @@
 import getpass
 import os
-from cli.utils import gather_https_info, create_inventory_file
-from cli.mara import configure_mara_server, configure_tool_server
-from cli.workspace import configure_workspace_api, configure_workspace_load_service
+import subprocess
 
+from cli import utils, mara, workspace
+import enums
 
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
@@ -19,34 +19,49 @@ def main():
     )
     input('Press ENTER to continue')
 
+    cmd = (
+        'aws ecr get-login-password --region us-west-1 '
+        '| docker login --username AWS --password-stdin 441665557124.dkr.ecr.us-west-1.amazonaws.com'
+    )
+    subprocess.run(cmd, shell=True)
 
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
-    mara_host_config = gather_https_info()
+    mara_host_config = utils.gather_https_info()
     if not os.path.exists(inventory_filepath):
         mara_host_config.update({
             'ansible_host': '127.0.0.1',
             'ansible_user': getpass.getuser(),
             'ansible_connection': 'local'
         })
-        create_inventory_file(inventory_filepath, mara_host_config)
+        utils.create_inventory_file(inventory_filepath, mara_host_config)
 
     print("Deploying Workspace API...")
-    configure_workspace_api(inventory_filepath)
+    workspace.configure_workspace_api(inventory_filepath)
     
     print("Deploying Workspace Load Service...")
-    configure_workspace_load_service(inventory_filepath)
+    workspace.configure_workspace_load_service(inventory_filepath)
 
-    # Setup tool-server deployment
-    api_key_file = os.path.join(os.path.dirname(__file__), 'tool_server_api_key.txt')
-    print("Deploying the Tool Server...")
-    configure_tool_server(inventory_filepath, api_key_file)
+    # Setup tool-server .env file
+    print("\nCollecting Tool Server Values...\n")
+    tool_server_env_file = enums.TOOL_SERVER_ENV_FILE
+    existing_tool_server_env = utils.read_env_file(tool_server_env_file)
+    tool_server_env = mara.configure_tool_server(existing_tool_server_env)
+    with open(tool_server_env_file, 'w') as f:
+        for key, value in tool_server_env.items():
+            line = f'{key}={value}\n'
+            f.write(line)
 
-    # Configure the mara deployment
-    print('\nDeploying the MARA Server...\n')
-    with open(api_key_file, 'r') as f:
-        tool_server_api_key = f.read()
-    configure_mara_server(inventory_filepath, tool_server_api_key)
-    os.remove(api_key_file)
+    # Configure the mara .env file
+    tool_server_api_key = tool_server_env.get('API_KEY', None)
+    print('\nConfiguring the MARA Server...\n')
+    mara_env_file = enums.MARA_ENV_FILE
+    existing_mara_env = utils.read_env_file(mara_env_file)
+    mara_env = mara.configure_mara_server(existing_mara_env, tool_server_api_key)
+    mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
+    with open(mara_env_file, 'w') as f:
+        for key, value in mara_env.items():
+            line = f'{key}={value}\n'
+            f.write(line)
 
     print(
         "\nYour Services have been set up\n"

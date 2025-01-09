@@ -1,0 +1,34 @@
+include:
+  - docker-compose-mara.yaml
+services:
+  workspace-repo-api:
+    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest
+    environment:
+      - VIRTUAL_HOST=workspace-repo-api.test.nanome.ai
+      - VIRTUAL_PORT=8002
+      - PORT=8002
+      - AUTH_API=https://api.nanome.ai
+      - DB_PATH=/data/workspace-api.db
+      - ENV=dev
+      - LOAD_SERVICE='http://localhost:8989/load'
+    networks:
+      - nanome-ai-network
+    ports:
+      - 8002
+    volumes:
+      - workspace-api-volume:/data
+
+  workspace-load-service:
+    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest
+    environment:
+      - VIRTUAL_HOST=workspace-service-api.test.nanome.ai
+      - VIRTUAL_PORT=8003
+      - NANOME_SERVICE_PORT=8003
+      - NANOME_SERVICE_API_URL=http://workspace-repo-api
+    networks:
+      - nanome-ai-network
+    ports:
+      - 8003
+
+volumes:
+  workspace-api-volume:

@@ -109,3 +109,33 @@ def get_existing_aws_credentials():
         except Exception as e:
             print(f"Error reading AWS credentials file: {e}")
     return credentials
+
+
+def read_env_file(file_path):
+    """Reads a .env file and converts its content to a dictionary.
+    
+    Args:
+        file_path (str): The path to the .env file.
+    
+    Returns:
+        dict: A dictionary containing key-value pairs from the .env file.
+    """
+    env_dict = {}
+    
+    if not os.path.exists(file_path):
+        return env_dict
+    
+    with open(file_path, 'r') as file:
+        for line in file:
+            # Strip whitespace and skip empty lines or comments
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            
+            # Split by the first `=` sign
+            if '=' in line:
+                key, value = line.split('=', 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")  # Remove surrounding quotes if any
+                env_dict[key] = value
+    return env_dict

@@ -50,7 +50,6 @@ def main():
         "This script will do 2 things:\n"
         "\t- Install Docker on this server.\n"
         "\t- Install AWSCLI on this server, and configure AWS credentials.\n"
-        
     ))
     input('Press ENTER to continue...')
     inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
@@ -78,12 +77,10 @@ def main():
         install_docker_playbook
     ])
 
-
     # Add AWS credentials to the servers
     configure_aws_credentials(inventory_filepath)
 
     print('AWSCLI has been installed.')
-
     print("Docker has been installed! Note you may need to restart this server for changes to take effect.")
 
 

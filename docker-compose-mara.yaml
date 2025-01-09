@@ -1,0 +1,47 @@
+services:
+  mara-ai:
+    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest
+    environment:
+      - VIRTUAL_HOST=mara.test.nanome.ai
+      - VIRTUAL_PORT=8000
+      - TOOL_SERVER_URL=http://mara-tool-server:8001
+      - NANOME_SERVICES_URL=http://workspace-repo-api:8002
+      - DB_FILE=/data/data.db
+    env_file: .env.maraserver
+    depends_on:
+      - mara-tool-server
+    networks:
+      - nanome-ai-network
+    volumes:
+      - mara-ai-volume:/data
+    ports:
+      - 8000
+  mara-tool-server:
+    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-tool-server-enterprise:latest
+    environment:
+      - VIRTUAL_HOST=mara-tools.test.nanome.ai
+    env_file: .env.toolserver
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - mara-tool-volume:/data
+    networks:
+      - nanome-ai-network
+    ports:
+      - 8001
+  nginx-proxy:
+    image: jwilder/nginx-proxy:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro # Required for nginx-proxy to access container metadata
+    networks:
+      - nanome-ai-network
+
+networks:
+  nanome-ai-network:
+    driver: bridge
+
+volumes:
+  mara-tool-volume:
+  mara-ai-volume:
