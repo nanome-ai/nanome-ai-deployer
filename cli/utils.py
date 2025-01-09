@@ -139,3 +139,11 @@ def read_env_file(file_path):
                 value = value.strip().strip('"').strip("'")  # Remove surrounding quotes if any
                 env_dict[key] = value
     return env_dict
+
+
+def write_env_file(env_filepath, env_dict: dict) -> None:
+    """Write a dict to a .env file."""
+    with open(env_filepath, 'w') as f:
+        for key, value in env_dict.items():
+            line = f'{key}={value}\n'
+            f.write(line)

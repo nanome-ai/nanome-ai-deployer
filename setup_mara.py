@@ -6,7 +6,7 @@ from cli import utils, mara
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
-def main():
+def setup_mara(host=None):
     print(
         "\nThanks for using MARA! Let's get started setting up your server!\n"
         "This script will download and run 2 docker containers:\n"
@@ -15,44 +15,38 @@ def main():
     )
     input('Press ENTER to continue')
 
-    inventory_filepath = os.path.join(os.path.dirname(__file__), 'inventory.local.yaml')
-    mara_host_config = utils.gather_https_info()
-    if not os.path.exists(inventory_filepath):
-        mara_host_config.update({
-            'ansible_host': '127.0.0.1',
-            'ansible_user': getpass.getuser(),
-            'ansible_connection': 'local'
-        })
-        utils.create_inventory_file(inventory_filepath, mara_host_config)
+    if not host:
+        host = input('What Domain name will you be using to access? (ex. yourcompany.com) (Defaults to ip address ')
 
-    # Setup tool-server deployment
+    # Setup tool-server .env file
     print("\nCollecting Tool Server Values...\n")
+    tool_server_host = f'mara-tools.{host}'
     tool_server_env_file = enums.TOOL_SERVER_ENV_FILE
     existing_tool_server_env = utils.read_env_file(tool_server_env_file)
-    tool_server_api_key = existing_tool_server_env.get('API_KEY', None)
-
     tool_server_env = mara.configure_tool_server(existing_tool_server_env)
-    with open(tool_server_env_file, 'w') as f:
-        for key, value in tool_server_env.items():
-            line = f'{key}={value}\n'
-            f.write(line)
-    
-    # Configure the mara deployment
+    tool_server_env['VIRTUAL_HOST'] = tool_server_host
+    utils.write_env_file(tool_server_env_file, tool_server_env)
+
+    # Configure the mara .env file
+    tool_server_api_key = tool_server_env.get('API_KEY', None)
     print('\nConfiguring the MARA Server...\n')
     mara_env_file = enums.MARA_ENV_FILE
     existing_mara_env = utils.read_env_file(mara_env_file)
     mara_env = mara.configure_mara_server(existing_mara_env, tool_server_api_key)
     mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
-    with open(mara_env_file, 'w') as f:
-        for key, value in mara_env.items():
-            line = f'{key}={value}\n'
-            f.write(line)
-    print(
-        "\nYour Services have been set up\n"
-        "\t- MARA: 127.0.0.1:8000\n"
-        "\t- Tool Server: 127.0.0.1:8001\n"
-    )
+    mara_host = f'mara.{host}'
+    mara_env['VIRTUAL_HOST'] = mara_host
+    utils.write_env_file(mara_env_file, mara_env)
+    return mara_env, tool_server_env
 
 
 if __name__ == "__main__":
-    main()
+    mara_env, tool_server_env = setup_mara()
+    mara_host = mara_env['VIRTUAL_HOST']
+    tool_server_host = tool_server_env['VIRTUAL_HOST']
+    print(
+        "\nYour Services have been configured to run at the following urls\n"
+        f"\t- MARA: {mara_host}\n"
+        f"\t- Tool Server: {tool_server_host}\n"
+        "\n To start the services, run `docker compose up -d"
+    )
