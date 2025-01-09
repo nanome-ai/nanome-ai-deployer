@@ -2,8 +2,8 @@ import getpass
 import os
 import random
 import string
+import urllib.request
 import yaml
-
 
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
@@ -147,3 +147,14 @@ def write_env_file(env_filepath, env_dict: dict) -> None:
         for key, value in env_dict.items():
             line = f'{key}={value}\n'
             f.write(line)
+
+
+def get_public_ip():
+    """Get public ip from api.ipify.org."""
+    ip_lookup_url = "https://api.ipify.org"
+    try:
+        with urllib.request.urlopen(ip_lookup_url) as response:
+            return response.read().decode("utf-8")
+    except Exception as e:
+        print(f"Error fetching public IP: {e}")
+        return None

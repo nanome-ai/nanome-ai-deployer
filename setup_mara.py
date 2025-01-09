@@ -7,16 +7,21 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
 def setup_mara(host=None):
-    print(
-        "\nThanks for using MARA! Let's get started setting up your server!\n"
-        "This script will download and run 2 docker containers:\n"
-        "\t- Tool Server: Runs computations for MARA workflows.\n"
-        "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
-    )
-    input('Press ENTER to continue')
 
     if not host:
-        host = input('What Domain name will you be using to access? (ex. yourcompany.com) (Defaults to ip address ')
+        # If host is provided, then the user already got a welcome message
+        print(
+            "\nThanks for using MARA! Let's get started setting up your server!\n"
+            "This script will download and run 2 docker containers:\n"
+            "\t- Tool Server: Runs computations for MARA workflows.\n"
+            "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
+        )
+        input('Press ENTER to continue')
+
+    if not host:
+        host = input('What Domain name will you be using for this server? (ex. yourcompany.com) (Defaults to ip address ')
+        if not host:
+            host = utils.get_public_ip()
 
     # Setup tool-server .env file
     print("\nCollecting Tool Server Values...\n")

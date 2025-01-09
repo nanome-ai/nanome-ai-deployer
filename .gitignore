@@ -7,5 +7,4 @@ tool_server_api_key.txt
 *.pem
 venv
 .env*
-
 *.sh

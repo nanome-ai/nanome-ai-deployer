@@ -19,8 +19,10 @@ def setup_nanome_ai():
         "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
     )
     input('Press ENTER to continue')
+    host = input('What Domain name will you be using to access? (i.e. yourcompany.com) (Defaults to ip address)')
+    if not host:
+        host = utils.get_public_ip()
 
-    host = input('What Domain name will you be using to access? (ex. yourcompany.com) (Defaults to ip address ')
     login_to_aws()
 
     print("Deploying Workspace API...")
