@@ -1,6 +1,6 @@
 import os
 
-from cli import utils, mara, workspace
+from cli import utils, workspace
 from setup_mara import setup_mara
 from aws_login import login_to_aws
 import enums
@@ -37,7 +37,11 @@ def setup_nanome_ai():
     load_service_env = workspace.configure_workspace_load_service()
     load_service_env['VIRTUAL_HOST'] = loader_host
     utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
+
+    # Run Setup MARA script
     mara_env, tool_server_env = setup_mara(host=host)
+
+    # Return environment variables for each 
     return repo_env, load_service_env, mara_env, tool_server_env
 
 if __name__ == "__main__":
