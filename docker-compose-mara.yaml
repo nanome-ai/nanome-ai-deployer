@@ -6,6 +6,8 @@ services:
       - TOOL_SERVER_URL=http://mara-tool-server:8001
       - NANOME_SERVICES_URL=http://workspace-repo-api:8002
       - DB_FILE=/data/data.db
+      - FILES_DIR=/data/files
+      - CHROMA_DB_PATH=/data/chroma.db
     env_file: .env.maraserver
     depends_on:
       - mara-tool-server
