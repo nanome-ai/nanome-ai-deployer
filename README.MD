@@ -71,6 +71,36 @@ OR
 python setup_nanome_ai.py
 ```
 
+11) Start containers with docker compose
+```sh
+# Nanome AI
+docker compose up -d
+```
+OR
+```sh
+# MARA only deploy
+docker compose -f docker-compose-mara.yaml up -d
+```
+
+
+## Update/Redeploy
+1) Re-Authenticate with AWS
+```sh
+python aws_login.py
+```
+
+2) Redeploy with Docker compose
+```sh
+# Nanome AI
+docker compose up -d
+```
+OR
+```sh
+# MARA only deploy
+docker compose -f docker-compose-mara.yaml up -d
+```
+
+
 ## Configuring Windows Server
 
 This Repo contains a Powershell script `configure_windows.ps1` for downloading and installing Photon on the Windows Server
