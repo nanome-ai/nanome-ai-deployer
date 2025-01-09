@@ -29,7 +29,7 @@ def configure_tool_server(existing_env=None) -> dict:
     return env
 
 
-def configure_mara_server(existing_mara_env, tool_server_api_key) -> dict:
+def configure_mara_server(existing_mara_env) -> dict:
     azure_provider = None
     env = {}
     while azure_provider not in ['1', '2']:
@@ -70,6 +70,5 @@ def configure_mara_server(existing_mara_env, tool_server_api_key) -> dict:
 
     env.update({
         'LLM_API_KEY': llm_key,
-        'TOOL_SERVER_KEY': tool_server_api_key
     })
     return env

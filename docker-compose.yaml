@@ -9,7 +9,6 @@ services:
       - AUTH_API=https://api.nanome.ai
       - DB_PATH=/data/workspace-api.db
       - ENV=dev
-      - LOAD_SERVICE='http://localhost:8989/load'
     env_file: .env.workspace_repo
     networks:
       - nanome-ai-network
@@ -17,13 +16,11 @@ services:
       - 8002
     volumes:
       - workspace-api-volume:/data
-
   workspace-load-service:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest
     environment:
       - VIRTUAL_PORT=8003
       - NANOME_SERVICE_PORT=8003
-      - NANOME_SERVICE_API_URL=http://workspace-repo-api
     env_file: .env.workspace_loader
     networks:
       - nanome-ai-network

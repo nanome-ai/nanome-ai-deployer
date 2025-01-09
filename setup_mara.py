@@ -38,7 +38,7 @@ def setup_mara(host=None, workspace_repo_host=None, workspace_loader_host=None):
     mara_host = f'mara.{host}'
     mara_env_file = enums.MARA_ENV_FILE
     existing_mara_env = utils.read_env_file(mara_env_file)
-    mara_env = mara.configure_mara_server(existing_mara_env, tool_server_api_key)
+    mara_env = mara.configure_mara_server(existing_mara_env)
     mara_env['API_HOST'] = mara_host
     mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
     mara_env['TOOL_SERVER_URL'] = f'http://{tool_server_host}'

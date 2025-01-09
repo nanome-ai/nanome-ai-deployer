@@ -27,15 +27,17 @@ def setup_nanome_ai():
 
     print("Deploying Workspace API...")
     workspace_repo_host = f'workspace-repo-api.{host}'
+    loader_host = f'workspace-service-api.{host}'
 
     repo_env = workspace.configure_workspace_api()
     repo_env['VIRTUAL_HOST'] = workspace_repo_host
+    repo_env['LOAD_SERVICE'] = f'{loader_host}/load'
     utils.write_env_file(enums.WORKSPACE_REPO_ENV_FILE, repo_env)
 
     print("Deploying Workspace Load Service...")
-    loader_host = f'workspace-service-api.{host}'
     load_service_env = workspace.configure_workspace_load_service()
     load_service_env['VIRTUAL_HOST'] = loader_host
+    load_service_env['NANOME_SERVICE_API_URL'] = f'http://{workspace_repo_host}'
     utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
 
     # Run Setup MARA script
@@ -61,5 +63,5 @@ if __name__ == "__main__":
         f"\t- Tool Server: {tool_server_host}\n"
         f"\t- Workspace API: {workspace_repo_host}\n"
         f"\t- Workspace Load Service: {loader_repo_host}\n"
-        "\n To start the services, run `docker compose up -d"
+        "\n To start the services, run `docker compose up -d`"
     )
