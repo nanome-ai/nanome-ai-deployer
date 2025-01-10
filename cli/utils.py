@@ -141,9 +141,10 @@ def read_env_file(file_path):
     return env_dict
 
 
-def write_env_file(env_filepath, env_dict: dict) -> None:
+def write_env_file(env_filepath, env_dict: dict, append=False) -> None:
     """Write a dict to a .env file."""
-    with open(env_filepath, 'w') as f:
+    write_mode = 'a' if append else 'w'
+    with open(env_filepath, write_mode) as f:
         for key, value in env_dict.items():
             line = f'{key}={value}\n'
             f.write(line)

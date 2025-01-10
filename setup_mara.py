@@ -6,8 +6,7 @@ from cli import utils, mara
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
-def setup_mara(host=None, workspace_repo_host=None, workspace_loader_host=None):
-
+def setup_mara(host=None, protocol='', certs_path=''):
     if not host:
         # If host is provided, then the user already got a welcome message
         print(
@@ -23,13 +22,34 @@ def setup_mara(host=None, workspace_repo_host=None, workspace_loader_host=None):
         if not host:
             host = utils.get_public_ip()
 
+    # Gather https info if not provided.
+    if not protocol:
+        https_info = utils.gather_https_info()
+        protocol = 'https' if https_info['https_enabled'] else 'http'
+        certs_path = https_info.get('certs_path', '')
+
+    # Set SSL cert paths
+    use_https = protocol == 'https'
+    ssl_cert_path = ssl_key_path = ''
+    if certs_path:
+        ssl_cert_path = f'{certs_path}/certs.pem'
+        ssl_key_path = f'{certs_path}/key.pem'
+
     # Setup tool-server .env file
     print("\nCollecting Tool Server Values...\n")
     tool_server_host = f'mara-tools.{host}'
     tool_server_env_file = enums.TOOL_SERVER_ENV_FILE
     existing_tool_server_env = utils.read_env_file(tool_server_env_file)
     tool_server_env = mara.configure_tool_server(existing_tool_server_env)
-    tool_server_env['VIRTUAL_HOST'] = tool_server_host
+    tool_server_env.update(
+        HTTPS=use_https,
+        VIRTUAL_HOST=tool_server_host,
+    )
+    if certs_path:
+        tool_server_env.update(
+            SSL_CERT_PATH=ssl_cert_path,
+            SSL_KEY_PATH=ssl_key_path,
+        )
     utils.write_env_file(tool_server_env_file, tool_server_env)
 
     # Configure the mara .env file
@@ -39,14 +59,20 @@ def setup_mara(host=None, workspace_repo_host=None, workspace_loader_host=None):
     mara_env_file = enums.MARA_ENV_FILE
     existing_mara_env = utils.read_env_file(mara_env_file)
     mara_env = mara.configure_mara_server(existing_mara_env)
-    mara_env['API_HOST'] = mara_host
-    mara_env['TOOL_SERVER_KEY'] = tool_server_api_key
-    mara_env['TOOL_SERVER_URL'] = f'http://{tool_server_host}'
-    mara_env['VIRTUAL_HOST'] = mara_host
-    if workspace_repo_host:
-        mara_env['WORKSPACE_API_URL'] = f'http://{workspace_repo_host}'
-    if workspace_loader_host:
-        mara_env['NANOME_SERVICES_URL'] = f'http://{workspace_loader_host}'
+
+    mara_env.update(
+        HTTPS=use_https,
+        API_HOST=mara_host,
+        TOOL_SERVER_KEY=tool_server_api_key,
+        TOOL_SERVER_URL=f'{protocol}://{tool_server_host}',
+        VIRTUAL_HOST=mara_host,
+    )
+    if certs_path:
+        mara_env.update(
+            SSL_CERT_PATH=ssl_cert_path,
+            SSL_KEY_PATH=ssl_key_path,
+        )
+
     utils.write_env_file(mara_env_file, mara_env)
     return mara_env, tool_server_env
 

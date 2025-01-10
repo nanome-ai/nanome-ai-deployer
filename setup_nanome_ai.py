@@ -23,32 +23,44 @@ def setup_nanome_ai():
     if not host:
         host = utils.get_public_ip()
 
+
+    https_info = utils.gather_https_info()
+    protocol = 'https' if https_info['https_enabled'] else 'http'
+    certs_path = https_info.get('certs_path', '')
+
     login_to_aws()
 
     print("Deploying Workspace API...")
     workspace_repo_host = f'workspace-repo-api.{host}'
-    loader_host = f'workspace-service-api.{host}'
+    workspace_loader_host = f'workspace-service-api.{host}'
 
     repo_env = workspace.configure_workspace_api()
     repo_env['VIRTUAL_HOST'] = workspace_repo_host
-    repo_env['LOAD_SERVICE'] = f'{loader_host}/load'
+    repo_env['LOAD_SERVICE'] = f'{workspace_loader_host}/load'
     utils.write_env_file(enums.WORKSPACE_REPO_ENV_FILE, repo_env)
 
     print("Deploying Workspace Load Service...")
     load_service_env = workspace.configure_workspace_load_service()
-    load_service_env['VIRTUAL_HOST'] = loader_host
-    load_service_env['NANOME_SERVICE_API_URL'] = f'http://{workspace_repo_host}'
+    load_service_env['VIRTUAL_HOST'] = workspace_loader_host
+    load_service_env['NANOME_SERVICE_API_URL'] = f'{protocol}://{workspace_repo_host}'
     utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
 
     # Run Setup MARA script
     mara_env, tool_server_env = setup_mara(
         host=host,
-        workspace_repo_host=workspace_repo_host,
-        workspace_loader_host=loader_host
+        protocol=protocol,
+        certs_path=certs_path
     )
+
+    mara_env_vars = {   
+        'WORKSPACE_API_URL': f'{protocol}://{workspace_repo_host}',
+        'NANOME_SERVICES_URL': f'{protocol}://{workspace_loader_host}',
+    }
+    utils.write_env_file(enums.MARA_ENV_FILE, mara_env_vars, append=True)
 
     # Return environment variables for each 
     return repo_env, load_service_env, mara_env, tool_server_env
+
 
 if __name__ == "__main__":
     repo_env, loader_env, mara_env, tool_server_env = setup_nanome_ai()
