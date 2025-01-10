@@ -3,6 +3,7 @@ include:
 services:
   workspace-repo-api:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest
+    pull_policy: always
     environment:
       - VIRTUAL_PORT=8002
       - PORT=8002
@@ -18,6 +19,7 @@ services:
       - workspace-api-volume:/data
   workspace-load-service:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest
+    pull_policy: always
     environment:
       - VIRTUAL_PORT=8003
       - NANOME_SERVICE_PORT=8003

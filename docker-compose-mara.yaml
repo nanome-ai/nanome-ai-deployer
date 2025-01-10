@@ -1,6 +1,7 @@
 services:
   mara-ai:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest
+    pull_policy: always
     environment:
       - VIRTUAL_PORT=8000
       - DB_FILE=/data/data.db
@@ -17,6 +18,7 @@ services:
       - 8000
   mara-tool-server:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-tool-server-enterprise:latest
+    pull_policy: always
     env_file: .env.toolserver
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
