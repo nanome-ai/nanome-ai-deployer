@@ -17,7 +17,7 @@ def gather_https_info():
     https_input = None
     while https_input not in ['1', '2']:
         https_input = input(
-            "\nDo you want to configure https?\n"
+            "\nDo you have local TLS certificates you would like to use for HTTPS?\n"
             "1. Yes\n"
             "2. No\n"
             "Make a selection (1|2): "
