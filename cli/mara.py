@@ -43,7 +43,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if current_llm_api_url:
         modify_answer = input(f'Your current LLM_API_URL is set to {current_llm_api_url}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         llm_api_url = input("Enter your Azure LLM API URL (e.g https://acme.azure.com/v1): ")
 
@@ -51,7 +51,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if embedding_deployment:
         modify_answer = input(f'Your current EMBEDDING_DEPLOYMENT is set to {embedding_deployment}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         embedding_deployment = input('Enter the deployment name for your embedding model (default "text-embedding-ada-002") ') or 'text-embedding-ada-002'
 
@@ -59,7 +59,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if gpt4_deployment:
         modify_answer = input(f'Your current gpt-4 deployment is set to {gpt4_deployment}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         gpt4_deployment = input('Enter the deployment name for your gpt-4 model (default "gpt-4") ') or 'gpt-4'
 
@@ -67,7 +67,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if gpt4o_deployment:
         modify_answer = input(f'Your current gpt4o_deployment is set to {gpt4o_deployment}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         gpt4o_deployment = input('Enter the deployment name for your gpt-4o model (default "gpt-4o") ') or 'gpt-4o'
 
@@ -75,7 +75,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if gpt35_deployment:
         modify_answer = input(f'Your current gpt35_deployment is set to {gpt35_deployment}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         gpt35_deployment = input('Enter the deployment name for your gpt-3.5 model (default "gpt-3.5") ') or 'gpt-3.5'
     
@@ -83,7 +83,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if azure_llm_api_version:
         modify_answer = input(f'Your current AZURE_EMBEDDING_API_VERSION is set to {azure_llm_api_version}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         azure_llm_api_version = input('Enter the API version for your LLM (default "2024-08-01-preview") ') or '2024-08-01-preview'
 
@@ -91,7 +91,7 @@ def configure_azure_envvars(mara_env) -> dict:
     update_value = True
     if azure_embedding_api_version:
         modify_answer = input(f'Your current AZURE_EMBEDDING_API_VERSION is set to {azure_embedding_api_version}. Press ENTER to continue, or "1" to modify: ')
-        update_value = modify_answer is not ''
+        update_value = modify_answer != ''
     if update_value:
         azure_embedding_api_version = input('Enter the API version for your embedding model (default "2023-05-15") ') or '2023-05-15'
 
