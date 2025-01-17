@@ -29,6 +29,14 @@ def configure_tool_server(existing_env=None) -> dict:
     return env
 
 
+def configure_azure_envvars() -> dict:
+    llm_url = input("Enter your Azure LLM API URL (e.g https://acme.azure.com/v1): ")
+    env = {
+        'OPENAI_API_TYPE': 'azure',
+        'LLM_API_URL': llm_url,
+    }
+    return env
+
 def configure_mara_server(existing_mara_env) -> dict:
     azure_provider = None
     env = {}
@@ -40,9 +48,8 @@ def configure_mara_server(existing_mara_env) -> dict:
             'Make a selection (1|2): '
         ))
     if azure_provider == '1':
-        env['OPENAI_API_TYPE'] = 'azure'
-        llm_url = input("Enter your Azure LLM API URL (e.g https://acme.azure.com/v1): ")
-        env['LLM_API_URL'] = llm_url
+        azure_env_vars = configure_azure_envvars()
+        env.update(azure_env_vars)
 
     exisitng_llm_key = existing_mara_env.get('LLM_API_KEY', None)
     llm_key_option = None
