@@ -31,7 +31,7 @@ def configure_tool_server(existing_env=None) -> dict:
 
 def configure_azure_envvars(mara_env) -> dict:
 
-    llm_api_url = current_llm_api_url = mara_env.get('LLM_API_URL', None)
+    llm_api_url = mara_env.get('LLM_API_URL', None)
     embedding_deployment = mara_env.get('EMBEDDING_MODEL', None)
     gpt4_deployment = mara_env.get('LLM_MODEL', None)
     gpt4o_deployment = mara_env.get('LLM_MODEL_MD', None)
@@ -41,8 +41,8 @@ def configure_azure_envvars(mara_env) -> dict:
 
     # Collect Azure LLM API URL
     update_value = True
-    if current_llm_api_url:
-        modify_answer = input(f'Your current LLM_API_URL is set to {current_llm_api_url}. Press ENTER to continue, or "1" to modify: ')
+    if llm_api_url:
+        modify_answer = input(f'Your current LLM_API_URL is set to {llm_api_url}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer != ''
     if update_value:
         llm_api_url = input("Enter your Azure LLM API URL (e.g https://acme.azure.com/v1): ")
