@@ -32,12 +32,12 @@ def configure_tool_server(existing_env=None) -> dict:
 def configure_azure_envvars(mara_env) -> dict:
 
     llm_api_url = current_llm_api_url = mara_env.get('LLM_API_URL', None)
-    embedding_deployment = current_embedding_deployment = mara_env.get('EMBEDDING_MODEL', None)
-    gpt4_deployment = current_gpt4_deployment = mara_env.get('LLM_MODEL', None)
-    gpt4o_deployment = current_gpt4o_deployment = mara_env.get('LLM_MODEL_MD', None)
-    gpt35_deployment = current_gpt35_deployment = mara_env.get('LLM_MODEL_SM', None)
-    azure_llm_api_version = current_azure_llm_api_version = mara_env.get('AZURE_LLM_API_VERSION', None)
-    azure_embedding_api_version = current_azure_embedding_api_version = mara_env.get('AZURE_EMBEDDING_API_VERSION', None)
+    embedding_deployment = mara_env.get('EMBEDDING_MODEL', None)
+    gpt4_deployment = mara_env.get('LLM_MODEL', None)
+    gpt4o_deployment = mara_env.get('LLM_MODEL_MD', None)
+    gpt35_deployment = mara_env.get('LLM_MODEL_SM', None)
+    azure_llm_api_version = mara_env.get('AZURE_LLM_API_VERSION', None)
+    azure_embedding_api_version = mara_env.get('AZURE_EMBEDDING_API_VERSION', None)
 
     # Collect Azure LLM API URL
     update_value = True
@@ -49,48 +49,48 @@ def configure_azure_envvars(mara_env) -> dict:
 
     # Collect Azure EMBEDDING_DEPLOYMENT NAME
     update_value = True
-    if current_embedding_deployment:
-        modify_answer = input(f'Your current EMBEDDING_DEPLOYMENT is set to {current_embedding_deployment}. Press ENTER to continue, or "1" to modify: ')
+    if embedding_deployment:
+        modify_answer = input(f'Your current EMBEDDING_DEPLOYMENT is set to {embedding_deployment}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer is not ''
     if update_value:
         embedding_deployment = input('Enter the deployment name for your embedding model (default "text-embedding-ada-002") ') or 'text-embedding-ada-002'
 
     # Collect Azure GPT-4 Deployment name
     update_value = True
-    if current_gpt4_deployment:
-        modify_answer = input(f'Your current gpt-4 deployment is set to {current_gpt4_deployment}. Press ENTER to continue, or "1" to modify: ')
+    if gpt4_deployment:
+        modify_answer = input(f'Your current gpt-4 deployment is set to {gpt4_deployment}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer is not ''
     if update_value:
         gpt4_deployment = input('Enter the deployment name for your gpt-4 model (default "gpt-4") ') or 'gpt-4'
 
     # Collect Azure GPT-4o Deployment name
     update_value = True
-    if current_gpt4o_deployment:
-        modify_answer = input(f'Your current gpt4o_deployment is set to {current_gpt4o_deployment}. Press ENTER to continue, or "1" to modify: ')
+    if gpt4o_deployment:
+        modify_answer = input(f'Your current gpt4o_deployment is set to {gpt4o_deployment}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer is not ''
     if update_value:
         gpt4o_deployment = input('Enter the deployment name for your gpt-4o model (default "gpt-4o") ') or 'gpt-4o'
 
     # Collect Azure GPT-3.5 Deployment name
     update_value = True
-    if current_gpt35_deployment:
-        modify_answer = input(f'Your current gpt35_deployment is set to {current_gpt35_deployment}. Press ENTER to continue, or "1" to modify: ')
+    if gpt35_deployment:
+        modify_answer = input(f'Your current gpt35_deployment is set to {gpt35_deployment}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer is not ''
     if update_value:
         gpt35_deployment = input('Enter the deployment name for your gpt-3.5 model (default "gpt-3.5") ') or 'gpt-3.5'
     
     # Collect llm api version
     update_value = True
-    if current_azure_llm_api_version:
-        modify_answer = input(f'Your current AZURE_EMBEDDING_API_VERSION is set to {current_azure_llm_api_version}. Press ENTER to continue, or "1" to modify: ')
+    if azure_llm_api_version:
+        modify_answer = input(f'Your current AZURE_EMBEDDING_API_VERSION is set to {azure_llm_api_version}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer is not ''
     if update_value:
         azure_llm_api_version = input('Enter the API version for your LLM (default "2024-08-01-preview") ') or '2024-08-01-preview'
 
     # Collect embedding api version
     update_value = True
-    if current_azure_embedding_api_version:
-        modify_answer = input(f'Your current AZURE_EMBEDDING_API_VERSION is set to {current_azure_embedding_api_version}. Press ENTER to continue, or "1" to modify: ')
+    if azure_embedding_api_version:
+        modify_answer = input(f'Your current AZURE_EMBEDDING_API_VERSION is set to {azure_embedding_api_version}. Press ENTER to continue, or "1" to modify: ')
         update_value = modify_answer is not ''
     if update_value:
         azure_embedding_api_version = input('Enter the API version for your embedding model (default "2023-05-15") ') or '2023-05-15'
