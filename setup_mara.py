@@ -18,7 +18,7 @@ def setup_mara(host=None, protocol='', certs_path=''):
         input('Press ENTER to continue')
 
     if not host:
-        host = input('What Domain name will you be using for this server? (ex. yourcompany.com) (Defaults to ip address ')
+        host = input('What Domain name will you be using for this server? (ex. yourcompany.com) (Defaults to ip address) ')
         if not host:
             host = utils.get_public_ip()
 
@@ -85,5 +85,5 @@ if __name__ == "__main__":
         "\nYour Services have been configured to run at the following urls\n"
         f"\t- MARA: {mara_host}\n"
         f"\t- Tool Server: {tool_server_host}\n"
-        "\n To start the services, run `docker compose up -d"
+        "\n To start the services, run `docker compose up -d`"
     )
