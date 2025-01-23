@@ -28,6 +28,16 @@ services:
       - nanome-ai-network
     ports:
       - 8003
-
+  nanome-auth-proxy:
+    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/nanome-auth-proxy:latest
+    pull_policy: always
+    environment:
+      - VIRTUAL_PORT=8004
+      - PORT=8004
+      - HTTPS=false
+    networks:
+      - nanome-ai-network
+    ports:
+      - 8004
 volumes:
   workspace-api-volume:
