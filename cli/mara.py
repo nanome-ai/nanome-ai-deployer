@@ -30,7 +30,6 @@ def configure_tool_server(existing_env=None) -> dict:
 
 
 def configure_azure_envvars(mara_env) -> dict:
-
     llm_api_url = mara_env.get('LLM_API_URL', None)
     embedding_deployment = mara_env.get('EMBEDDING_MODEL', None)
     gpt4_deployment = mara_env.get('LLM_MODEL', None)

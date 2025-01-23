@@ -12,11 +12,12 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 def setup_nanome_ai():
     print(
         "\nThanks for using Nanome AI! Let's get started setting up your server!\n"
-        "This script will set up the environment variables for 4 docker containers:\n"
+        "This script will set up the environment variables for 5 docker containers:\n"
         "\t- Workspace API: Acts as a data store of Nanome workspaces.\n"
         "\t- Workspace Load Service: Contains business logic for rendering structure files as a Nanome workspace.\n"
         "\t- Tool Server: Runs computations for MARA workflows.\n"
         "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
+        "\t- Nanome auth proxy: Proxy for Nanome authentication used by VR headsets.\n"
     )
     input('Press ENTER to continue')
     host = input('What Domain name will you be using to access? (i.e. yourcompany.com) (Defaults to ip address)')
@@ -44,6 +45,9 @@ def setup_nanome_ai():
     load_service_env['VIRTUAL_HOST'] = workspace_loader_host
     load_service_env['NANOME_SERVICE_API_URL'] = f'{protocol}://{workspace_repo_host}'
     utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
+    
+    nanome_auth_proxy_host = f'auth-proxy.{host}'
+    utils.write_env_file(enums.AUTH_PROXY_ENV_FILE, {'VIRTUAL_HOST': nanome_auth_proxy_host})
 
     # Run Setup MARA script
     mara_env, tool_server_env = setup_mara(
