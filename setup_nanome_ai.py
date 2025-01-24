@@ -58,7 +58,7 @@ def setup_nanome_ai():
 
     mara_env_vars = {   
         'WORKSPACE_API_URL': f'{protocol}://{workspace_repo_host}',
-        'NANOME_SERVICES_URL': f'{protocol}://{workspace_loader_host}',
+        'NANOME_SERVICE_URL': f'{protocol}://{workspace_loader_host}',
     }
     utils.write_env_file(enums.MARA_ENV_FILE, mara_env_vars, append=True)
 
