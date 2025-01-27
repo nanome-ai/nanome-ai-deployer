@@ -43,6 +43,7 @@ def setup_mara(host=None, protocol='', certs_path=''):
     tool_server_env = mara.configure_tool_server(existing_tool_server_env)
     tool_server_env.update(
         HTTPS=use_https,
+        FILES_VOLUME='nanome-ai-deployer_mara-tool-volume',
         VIRTUAL_HOST=tool_server_host,
     )
     if certs_path:
