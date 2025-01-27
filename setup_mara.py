@@ -20,7 +20,7 @@ def setup_mara(host=None, protocol='', certs_path=''):
     if not host:
         host = input('What Domain name will you be using for this server? (ex. yourcompany.com) (Defaults to ip address) ')
         if not host:
-            host = utils.get_public_ip()
+            host = utils.get_public_ip() + '.nip.io'
 
     # Gather https info if not provided.
     if not protocol:
