@@ -22,7 +22,7 @@ def setup_nanome_ai():
     input('Press ENTER to continue')
     host = input('What Domain name will you be using to access? (i.e. yourcompany.com) (Defaults to ip address)')
     if not host:
-        host = utils.get_public_ip()
+        host = utils.get_public_ip() + '.nip.io'
 
 
     https_info = utils.gather_https_info()
