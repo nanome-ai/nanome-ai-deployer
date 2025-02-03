@@ -32,8 +32,8 @@ def setup_nanome_ai():
     login_to_aws()
 
     print("Deploying Workspace API...")
-    workspace_repo_host = f'workspace-repo-api.{host}'
-    workspace_loader_host = f'workspace-service-api.{host}'
+    workspace_repo_host = f'workspace-repo.{host}'
+    workspace_loader_host = f'workspace-service.{host}'
 
     repo_env = workspace.configure_workspace_api()
     repo_env['VIRTUAL_HOST'] = workspace_repo_host
@@ -45,8 +45,8 @@ def setup_nanome_ai():
     load_service_env['VIRTUAL_HOST'] = workspace_loader_host
     load_service_env['NANOME_SERVICE_API_URL'] = f'{protocol}://{workspace_repo_host}'
     utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
-    
-    nanome_auth_proxy_host = f'auth-proxy.{host}'
+
+    nanome_auth_proxy_host = f'nanome-auth.{host}'
     utils.write_env_file(enums.AUTH_PROXY_ENV_FILE, {'VIRTUAL_HOST': nanome_auth_proxy_host})
 
     # Run Setup MARA script
@@ -56,13 +56,13 @@ def setup_nanome_ai():
         certs_path=certs_path
     )
 
-    mara_env_vars = {   
+    mara_env_vars = {
         'WORKSPACE_API_URL': f'{protocol}://{workspace_repo_host}',
         'NANOME_SERVICE_URL': f'{protocol}://{workspace_loader_host}',
     }
     utils.write_env_file(enums.MARA_ENV_FILE, mara_env_vars, append=True)
 
-    # Return environment variables for each 
+    # Return environment variables for each
     return repo_env, load_service_env, mara_env, tool_server_env
 
 
