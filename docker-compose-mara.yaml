@@ -5,18 +5,32 @@ services:
     stop_grace_period: 1s
     environment:
       - VIRTUAL_PORT=8000
+      - CHROMA_URL=mara-embeddings
+      - CHROMA_PORT=8002
       - DB_FILE=/data/data.db
       - FILES_DIR=/data/files
-      - CHROMA_DB_PATH=/data/chroma.db
     env_file: .env.maraserver
     depends_on:
+      - mara-embeddings
       - mara-tool-server
-    networks:
-      - nanome-ai-network
     volumes:
       - mara-ai-volume:/data
+    networks:
+      - nanome-ai-network
     ports:
       - 8000
+  mara-embeddings:
+    image: chromadb/chroma
+    environment:
+      - ANONYMIZED_TELEMETRY=False
+      - CHROMA_HOST_PORT=8002
+      - PERSIST_DIRECTORY=/data/chroma
+    volumes:
+      - mara-embeddings-volume:/data
+    networks:
+      - nanome-ai-network
+    ports:
+      - '8002'
   mara-tool-server:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-tool-server-enterprise:latest
     pull_policy: always
@@ -45,5 +59,6 @@ networks:
     driver: bridge
 
 volumes:
-  mara-tool-volume:
   mara-ai-volume:
+  mara-embeddings-volume:
+  mara-tool-volume:
