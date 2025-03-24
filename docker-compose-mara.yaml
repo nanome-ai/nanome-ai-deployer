@@ -44,7 +44,7 @@ services:
     ports:
       - 8001
   nginx-proxy:
-    image: jwilder/nginx-proxy:latest
+    image: jwilder/nginx-proxy:1.6.4
     container_name: nginx-proxy
     ports:
       - "80:80"
