@@ -20,7 +20,7 @@ services:
     ports:
       - 8000
   mara-embeddings:
-    image: chromadb/chroma
+    image: chromadb/chroma:0.6.3
     environment:
       - ANONYMIZED_TELEMETRY=False
       - CHROMA_HOST_PORT=8002
