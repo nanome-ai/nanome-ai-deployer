@@ -1,6 +1,6 @@
 services:
   mara-ai:
-    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest
+    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-ai:latest
     pull_policy: always
     stop_grace_period: 1s
     environment:

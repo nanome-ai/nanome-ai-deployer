@@ -11,13 +11,14 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 def setup_nanome_ai():
     print(
-        "\nThanks for using Nanome AI! Let's get started setting up your server!\n"
-        "This script will set up the environment variables for 5 docker containers:\n"
-        "\t- Workspace API: Acts as a data store of Nanome workspaces.\n"
-        "\t- Workspace Load Service: Contains business logic for rendering structure files as a Nanome workspace.\n"
-        "\t- Tool Server: Runs computations for MARA workflows.\n"
-        "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
-        "\t- Nanome auth proxy: Proxy for Nanome authentication used by VR headsets.\n"
+        "\nThanks for using Nanome AI! Let's get started setting up your server!\n\n"
+        "This script will set up the environment variables for 6 docker containers:\n"
+        " - Workspace API: The main API for Nanome v2 workspaces.\n"
+        " - Workspace DB: The database for the workspace API.\n"
+        " - MARA: Web Application and API for performing comp-chem workflows.\n"
+        " - MARA Tool Server: Runs computations for MARA workflows.\n"
+        " - MARA Embeddings: Vector database for storing embeddings.\n"
+        " - Nanome auth proxy: Proxy for Nanome authentication used by VR headsets.\n"
     )
     input('Press ENTER to continue')
     host = input('What Domain name will you be using to access? (i.e. yourcompany.com) (Defaults to ip address)')
@@ -32,19 +33,11 @@ def setup_nanome_ai():
     login_to_aws()
 
     print("Deploying Workspace API...")
-    workspace_repo_host = f'workspace-repo.{host}'
-    workspace_loader_host = f'workspace-service.{host}'
+    workspaces_host = f'workspaces.{host}'
 
-    repo_env = workspace.configure_workspace_api()
-    repo_env['VIRTUAL_HOST'] = workspace_repo_host
-    repo_env['LOAD_SERVICE'] = f'{workspace_loader_host}/load'
-    utils.write_env_file(enums.WORKSPACE_REPO_ENV_FILE, repo_env)
-
-    print("Deploying Workspace Load Service...")
-    load_service_env = workspace.configure_workspace_load_service()
-    load_service_env['VIRTUAL_HOST'] = workspace_loader_host
-    load_service_env['NANOME_SERVICE_API_URL'] = f'{protocol}://{workspace_repo_host}'
-    utils.write_env_file(enums.WORKSPACE_LOAD_SERVICE_ENV_FILE, load_service_env)
+    workspaces_env = workspace.configure_workspace_api()
+    workspaces_env['VIRTUAL_HOST'] = workspaces_host
+    utils.write_env_file(enums.WORKSPACES_ENV_FILE, workspaces_env)
 
     nanome_auth_proxy_host = f'nanome-auth.{host}'
     utils.write_env_file(enums.AUTH_PROXY_ENV_FILE, {'VIRTUAL_HOST': nanome_auth_proxy_host})
@@ -57,27 +50,24 @@ def setup_nanome_ai():
     )
 
     mara_env_vars = {
-        'WORKSPACE_API_URL': f'{protocol}://{workspace_repo_host}',
-        'NANOME_SERVICE_URL': f'{protocol}://{workspace_loader_host}',
+        'WORKSPACE_API_URL': f'{protocol}://{workspaces_host}',
     }
     utils.write_env_file(enums.MARA_ENV_FILE, mara_env_vars, append=True)
 
     # Return environment variables for each
-    return repo_env, load_service_env, mara_env, tool_server_env
+    return workspaces_env, mara_env, tool_server_env
 
 
 if __name__ == "__main__":
-    repo_env, loader_env, mara_env, tool_server_env = setup_nanome_ai()
+    workspaces_env, mara_env, tool_server_env = setup_nanome_ai()
 
-    workspace_repo_host = repo_env['VIRTUAL_HOST']
-    loader_repo_host = loader_env['VIRTUAL_HOST']
+    workspaces_host = workspaces_env['VIRTUAL_HOST']
     mara_host = mara_env['VIRTUAL_HOST']
     tool_server_host = tool_server_env['VIRTUAL_HOST']
     print(
         "\nYour Services have been configured to run at the following urls\n"
         f"\t- MARA: {mara_host}\n"
         f"\t- Tool Server: {tool_server_host}\n"
-        f"\t- Workspace API: {workspace_repo_host}\n"
-        f"\t- Workspace Load Service: {loader_repo_host}\n"
+        f"\t- Workspace API: {workspaces_host}\n"
         "\n To start the services, run `docker compose up -d`"
     )

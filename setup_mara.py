@@ -10,10 +10,11 @@ def setup_mara(host=None, protocol='', certs_path=''):
     if not host:
         # If host is provided, then the user already got a welcome message
         print(
-            "\nThanks for using MARA! Let's get started setting up your server!\n"
-            "This script will download and run 2 docker containers:\n"
-            "\t- Tool Server: Runs computations for MARA workflows.\n"
-            "\t- MARA: Web Application and API for performing comp-chem workflows.\n"
+            "\nThanks for using MARA! Let's get started setting up your server!\n\n"
+            "This script will download and run 3 docker containers:\n"
+            " - MARA: Web Application and API for performing comp-chem workflows.\n"
+            " - MARA Tool Server: Runs computations for MARA workflows.\n"
+            " - MARA Embeddings: Vector database for storing embeddings.\n"
         )
         input('Press ENTER to continue')
 
@@ -85,6 +86,6 @@ if __name__ == "__main__":
     print(
         "\nYour Services have been configured to run at the following urls\n"
         f"\t- MARA: {mara_host}\n"
-        f"\t- Tool Server: {tool_server_host}\n"
+        f"\t- MARA Tool Server: {tool_server_host}\n"
         "\n To start the services, run `docker compose up -d`"
     )

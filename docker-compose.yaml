@@ -1,33 +1,35 @@
 include:
   - docker-compose-mara.yaml
 services:
-  workspace-repo-api:
+  workspace-api:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest
     pull_policy: always
     environment:
       - VIRTUAL_PORT=8002
       - PORT=8002
       - AUTH_API=https://api.nanome.ai
-      - DB_PATH=/data/workspace-api.db
+      - DB_HOST=workspace-db
+      - DB_OLD_PATH=/data/workspace-api.db
       - ENV=dev
-    env_file: .env.workspace_repo
+    env_file: .env.workspaces
     networks:
       - nanome-ai-network
     ports:
       - 8002
     volumes:
       - workspace-api-volume:/data
-  workspace-load-service:
-    image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-load-service:latest
-    pull_policy: always
+  workspace-db:
+    image: postgres:latest
     environment:
-      - VIRTUAL_PORT=8003
-      - NANOME_SERVICE_PORT=8003
-    env_file: .env.workspace_loader
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER=nanome
+      - POSTGRES_PASSWORD=nanonano
     networks:
       - nanome-ai-network
     ports:
-      - 8003
+      - 5432
+    volumes:
+      - workspace-db-volume:/var/lib/postgresql/data
   nanome-auth-proxy:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/nanome-auth-proxy:latest
     pull_policy: always
@@ -43,3 +45,4 @@ services:
       - 8004
 volumes:
   workspace-api-volume:
+  workspace-db-volume:
