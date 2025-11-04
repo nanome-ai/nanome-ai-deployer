@@ -1,3 +1,4 @@
+import certifi
 import getpass
 import os
 import random
@@ -14,27 +15,63 @@ def generate_random_password(length=16):
 
 
 def gather_https_info():
-    https_input = None
-    while https_input not in ['1', '2']:
-        https_input = input(
-            "\nDo you have local TLS certificates you would like to use for HTTPS?\n"
-            "1. Yes\n"
-            "2. No\n"
-            "Make a selection (1|2): "
-        )
-    https_enabled = https_input == '1'
+    use_existing = None
+    while use_existing not in ['1', '2']:
+        if os.path.exists('./certs/default.crt') and os.path.exists('./certs/default.key'):
+            use_existing = input(
+                "\nFound existing TLS certificates in ./certs\n"
+                "Would you like to use these for HTTPS?\n"
+                "1. Yes\n"
+                "2. No\n"
+                "Make a selection (1|2): "
+            )
 
-    certs_path = None
-    if https_enabled:
-        certs_path = input("Enter the path to the directory where the SSL certificates are stored: ")
+    if use_existing != '1':
+        https_input = None
+        while https_input not in ['1', '2']:
+            https_input = input(
+                "\nDo you have local TLS certificates you would like to use for HTTPS?\n"
+                "1. Yes\n"
+                "2. No\n"
+                "Make a selection (1|2): "
+            )
+        if https_input != '1':
+            return False
 
-    host_config = {
-        'https_enabled': https_enabled
-    }
-    if https_enabled:
-        host_config['certs_path'] = certs_path
+    while True:
+        if use_existing != '1':
+            certs_path = input(
+                "\nEnter the path to the directory where the SSL certificates are stored.\n"
+                "Must be named default.crt and default.key. They will be copied to ./certs: ")
 
-    return host_config
+            if not os.path.exists(os.path.join(certs_path, 'default.crt')):
+                print("\ndefault.crt not found in the provided directory. Please try again.")
+                continue
+            if not os.path.exists(os.path.join(certs_path, 'default.key')):
+                print("\ndefault.key not found in the provided directory. Please try again.")
+                continue
+
+            # copy certs to ./certs
+            os.makedirs('./certs', exist_ok=True)
+            with open(os.path.join(certs_path, 'default.crt'), 'rb') as src_cert:
+                with open('./certs/default.crt', 'wb') as dest_cert:
+                    dest_cert.write(src_cert.read())
+            with open(os.path.join(certs_path, 'default.key'), 'rb') as src_key:
+                with open('./certs/default.key', 'wb') as dest_key:
+                    dest_key.write(src_key.read())
+
+            print("\nCertificates copied to ./certs")
+
+        # create a bundle.pem file for requests
+        with open('./certs/bundle.pem', 'w') as bundle_file:
+            with open(certifi.where(), 'r') as ca_file:
+                bundle_file.write(ca_file.read())
+            with open('./certs/default.crt', 'r') as cert_file:
+                bundle_file.write(cert_file.read())
+
+        break
+
+    return True
 
 
 def create_inventory_file(inventory_file, mara_host_config):
@@ -87,7 +124,7 @@ def get_existing_aws_credentials():
     # Check environment variables
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
     secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    
+
     if access_key and secret_key:
         credentials["aws_access_key"] = access_key
         credentials["aws_secret_key"] = secret_key
@@ -113,25 +150,25 @@ def get_existing_aws_credentials():
 
 def read_env_file(file_path):
     """Reads a .env file and converts its content to a dictionary.
-    
+
     Args:
         file_path (str): The path to the .env file.
-    
+
     Returns:
         dict: A dictionary containing key-value pairs from the .env file.
     """
     env_dict = {}
-    
+
     if not os.path.exists(file_path):
         return env_dict
-    
+
     with open(file_path, 'r') as file:
         for line in file:
             # Strip whitespace and skip empty lines or comments
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
-            
+
             # Split by the first `=` sign
             if '=' in line:
                 key, value = line.split('=', 1)

@@ -26,28 +26,25 @@ def setup_nanome_ai():
         host = utils.get_public_ip() + '.nip.io'
 
 
-    https_info = utils.gather_https_info()
-    protocol = 'https' if https_info['https_enabled'] else 'http'
-    certs_path = https_info.get('certs_path', '')
+    use_https = utils.gather_https_info()
+    protocol = 'https' if use_https else 'http'
 
     login_to_aws()
 
-    print("Deploying Workspace API...")
     workspaces_host = f'workspaces.{host}'
-
     workspaces_env = workspace.configure_workspace_api()
     workspaces_env['VIRTUAL_HOST'] = workspaces_host
+    if use_https:
+        workspaces_env['CERT_NAME'] = 'default'
     utils.write_env_file(enums.WORKSPACES_ENV_FILE, workspaces_env)
 
-    nanome_auth_proxy_host = f'nanome-auth.{host}'
-    utils.write_env_file(enums.AUTH_PROXY_ENV_FILE, {'VIRTUAL_HOST': nanome_auth_proxy_host})
+    nanome_auth_env = {'VIRTUAL_HOST': f'nanome-auth.{host}'}
+    if use_https:
+        nanome_auth_env['CERT_NAME'] = 'default'
+    utils.write_env_file(enums.AUTH_PROXY_ENV_FILE, nanome_auth_env)
 
     # Run Setup MARA script
-    mara_env, tool_server_env = setup_mara(
-        host=host,
-        protocol=protocol,
-        certs_path=certs_path
-    )
+    mara_env, tool_server_env = setup_mara(host=host, protocol=protocol)
 
     mara_env_vars = {
         'WORKSPACE_API_URL': f'{protocol}://{workspaces_host}',
