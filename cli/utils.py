@@ -1,3 +1,4 @@
+import sys
 import certifi
 import getpass
 import os
@@ -14,15 +15,51 @@ def generate_random_password(length=16):
     return ''.join(random.choice(characters) for i in range(length))
 
 
-def gather_https_info():
+def check_certs(path, name, enforce=False):
+    for ext in ['crt', 'key']:
+        cert_path = os.path.join(path, f'{name}.{ext}')
+        if not os.path.exists(cert_path):
+            return False
+        # check if PEM format
+        with open(cert_path, 'r') as f:
+            content = f.read()
+            if ext == 'crt' and '-----BEGIN CERTIFICATE-----' not in content:
+                if enforce:
+                    print(f"Certificate {name}.{ext} must be in PEM format.")
+                    sys.exit(1)
+                return False
+            if ext == 'key' and '-----BEGIN PRIVATE KEY-----' not in content:
+                if enforce:
+                    print(f"Private key {name}.{ext} must be in PEM format.")
+                    sys.exit(1)
+                return False
+    return True
+
+
+def has_default_certs(path, enforce=False):
+    return check_certs(path, 'default', enforce=enforce)
+
+
+def has_individual_certs(path, enforce=False):
+    has_certs = True
+    for name in ['mara', 'mara-tools', 'workspaces']:
+        if not check_certs(path, name, enforce=enforce):
+            has_certs = False
+            break
+    return has_certs
+
+
+def gather_https_info(host):
     use_existing = None
-    while use_existing not in ['1', '2']:
-        if os.path.exists('./certs/default.crt') and os.path.exists('./certs/default.key'):
+    has_default = has_default_certs('./certs')
+    has_individual = has_individual_certs('./certs')
+    if has_default or has_individual:
+        while use_existing not in ['1', '2']:
             use_existing = input(
-                "\nFound existing TLS certificates in ./certs\n"
+                "\n\nFound existing TLS certificates in ./certs\n"
                 "Would you like to use these for HTTPS?\n"
                 "1. Yes\n"
-                "2. No\n"
+                "2. No\n\n"
                 "Make a selection (1|2): "
             )
 
@@ -30,48 +67,67 @@ def gather_https_info():
         https_input = None
         while https_input not in ['1', '2']:
             https_input = input(
-                "\nDo you have local TLS certificates you would like to use for HTTPS?\n"
+                "\n\nDo you have local TLS certificates you would like to use for HTTPS?\n"
                 "1. Yes\n"
-                "2. No\n"
+                "2. No\n\n"
                 "Make a selection (1|2): "
             )
         if https_input != '1':
-            return False
+            return 'None'
 
     while True:
         if use_existing != '1':
             certs_path = input(
-                "\nEnter the path to the directory where the SSL certificates are stored.\n"
-                "Must be named default.crt and default.key. They will be copied to ./certs: ")
+                "\n\nEnter path containing either:\n"
+                f"  default.crt/default.key covering *.{host}\n"
+                "or\n"
+                f"  mara.crt/mara.key covering mara.{host}\n"
+                f"  mara-tools.crt/mara-tools.key covering mara-tools.{host}\n"
+                f"  workspaces.crt/workspaces.key covering workspaces.{host}\n"
+                "\nEnter path: "
+            )
 
-            if not os.path.exists(os.path.join(certs_path, 'default.crt')):
-                print("\ndefault.crt not found in the provided directory. Please try again.")
-                continue
-            if not os.path.exists(os.path.join(certs_path, 'default.key')):
-                print("\ndefault.key not found in the provided directory. Please try again.")
+            has_default = has_default_certs(certs_path)
+            has_individual = has_individual_certs(certs_path)
+            if not (has_default or has_individual):
+                print("Could not find valid certificates in the provided path. Please try again.")
                 continue
 
             # copy certs to ./certs
             os.makedirs('./certs', exist_ok=True)
-            with open(os.path.join(certs_path, 'default.crt'), 'rb') as src_cert:
-                with open('./certs/default.crt', 'wb') as dest_cert:
-                    dest_cert.write(src_cert.read())
-            with open(os.path.join(certs_path, 'default.key'), 'rb') as src_key:
-                with open('./certs/default.key', 'wb') as dest_key:
-                    dest_key.write(src_key.read())
-
-            print("\nCertificates copied to ./certs")
+            if has_default:
+                check_certs(certs_path, 'default', enforce=True)
+                with open(os.path.join(certs_path, 'default.crt'), 'rb') as src_cert:
+                    with open('./certs/default.crt', 'wb') as dest_cert:
+                        dest_cert.write(src_cert.read())
+                with open(os.path.join(certs_path, 'default.key'), 'rb') as src_key:
+                    with open('./certs/default.key', 'wb') as dest_key:
+                        dest_key.write(src_key.read())
+                print("Copied default certificates to ./certs.")
+            elif has_individual:
+                for name in ['mara', 'mara-tools', 'workspaces']:
+                    check_certs(certs_path, name, enforce=True)
+                    with open(os.path.join(certs_path, f'{name}.crt'), 'rb') as src_cert:
+                        with open(f'./certs/{name}.crt', 'wb') as dest_cert:
+                            dest_cert.write(src_cert.read())
+                    with open(os.path.join(certs_path, f'{name}.key'), 'rb') as src_key:
+                        with open(f'./certs/{name}.key', 'wb') as dest_key:
+                            dest_key.write(src_key.read())
+                print("Copied individual certificates to ./certs.")
 
         # create a bundle.pem file for requests
         with open('./certs/bundle.pem', 'w') as bundle_file:
             with open(certifi.where(), 'r') as ca_file:
                 bundle_file.write(ca_file.read())
-            with open('./certs/default.crt', 'r') as cert_file:
-                bundle_file.write(cert_file.read())
+            if has_default:
+                with open('./certs/default.crt', 'r') as cert_file:
+                    bundle_file.write(cert_file.read())
+            elif has_individual:
+                for name in ['mara', 'mara-tools', 'workspaces']:
+                    with open(f'./certs/{name}.crt', 'r') as cert_file:
+                        bundle_file.write(cert_file.read())
 
-        break
-
-    return True
+        return 'Default' if has_default else 'Individual'
 
 
 def create_inventory_file(inventory_file, mara_host_config):

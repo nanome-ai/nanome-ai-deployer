@@ -10,7 +10,7 @@ def configure_tool_server(existing_env=None) -> dict:
     existing_api_key = existing_env.get('API_KEY', None)
     while api_key_selection not in ['1', '2', '3']:
         api_key_selection = input((
-            "Tool Server API Key: How do you want to set up your key?\n"
+            "\n\nTool Server API Key: How do you want to set up your key?\n"
             "1. Generate new key automatically (Recommended for first time deployments):\n"
             "2. Use existing key already on server (Recommended for redeployments):\n"
             "3. Type new key manually\n\n"
@@ -93,7 +93,7 @@ def configure_mara_server(existing_mara_env) -> dict:
     env = {}
     while azure_provider not in ['1', '2']:
         azure_provider = input((
-            'Will you be using Microsoft Azure-hosted LLMs?\n'
+            '\n\nWill you be using Microsoft Azure-hosted LLMs?\n'
             '1. Yes\n'
             '2. No\n\n'
             'Make a selection (1|2): '
@@ -108,7 +108,7 @@ def configure_mara_server(existing_mara_env) -> dict:
         llm_key_option = '2'
     while llm_key_option not in ['1', '2']:
         llm_key_option = input((
-            '\nLLM API Key (1|2)\n'
+            '\n\nLLM API Key (1|2)\n'
             '1. Use existing key on server (Recommended for redeployments):\n'
             '2. Add/Update Key\n\n'
             'Make a selection (1|2): '
