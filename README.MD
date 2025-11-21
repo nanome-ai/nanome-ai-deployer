@@ -5,99 +5,83 @@
 - MARA server (Ubuntu)
 - Photon Server (Windows)
 
-## Configuring MARA Server
+## Deployment
 
-1) SSH into MARA Server
+### Setup
 
-```sh
-ssh username@mara-server-host
-```
-
-2) Install git
+Log in to the server via SSH and run the following commands
+(step-by-step explanation in next section)
 
 ```sh
 sudo apt-get update
-sudo apt install git
-```
-
-3) Clone install repo scripts
-```sh
+sudo apt install -y git python3 python3-venv
 git clone https://github.com/nanome-ai/nanome-ai-deployer
-```
-
-
-4) Cd into nanome-ai-deployer directory
-```sh
 cd nanome-ai-deployer
-```
-
-5) Set up Python and pip
-
-```sh
-sudo apt install python3
-
-# Set up virtualenv
-sudo apt install python3-venv
 python3 -m venv venv
 source venv/bin/activate
-```
-
-6) Install Requirements
-```sh
 pip install -r requirements.txt
-```
-
-7) Install Docker and AWSCLI
-```sh
 python install_prereqs.py
+sudo reboot
 ```
 
-8) Reboot you MARA server, so that Docker changes take effect.
-
-9) Reactivate virtualenv
+After reboot
 ```sh
 cd nanome-ai-deployer
 source venv/bin/activate
-```
-
-10) Run install scripts
-```sh
-# MARA only deployments
-python setup_mara.py
-```
-```sh
-# Nanome AI deployment
 python setup_nanome_ai.py
-```
-
-11) Start containers with docker compose
-```sh
-# Nanome AI
 docker compose up -d
 ```
-```sh
-# MARA only deploy
-docker compose -f docker-compose-mara.yaml up -d
-```
 
+### Update / Redeploy
 
-## Update/Redeploy
-1) Re-Authenticate with AWS
 ```sh
+cd nanome-ai-deployer
 python aws_login.py
-```
-
-2) Redeploy with Docker compose
-```sh
-# Nanome AI
 docker compose up -d
 ```
-OR
-```sh
-# MARA only deploy
-docker compose -f docker-compose-mara.yaml up -d
-```
 
+### Setup Step-by-step
+
+1) Install git and python
+   ```sh
+   sudo apt-get update
+   sudo apt install -y git python3 python3-venv
+   ```
+
+2) Clone this repository
+   ```sh
+   git clone https://github.com/nanome-ai/nanome-ai-deployer
+   cd nanome-ai-deployer
+   ```
+
+3) Set up Python and pip
+   ```sh
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+4) Install script dependencies, Docker, and AWSCLI
+   ```sh
+   pip install -r requirements.txt
+   python install_prereqs.py
+   ```
+
+5) Reboot the server
+   ```sh
+   sudo reboot
+   ```
+
+6) Reactivate virtualenv
+   ```sh
+   cd nanome-ai-deployer
+   source venv/bin/activate
+   ```
+
+7)  Run setup script and start services
+    ```sh
+    python setup_nanome_ai.py
+    docker compose up -d
+    ```
 
 ## Configuring Windows Server
 
@@ -109,9 +93,9 @@ This Repo contains a Powershell script `configure_windows.ps1` for downloading a
 
 3) In Powershell, run the script. It will ask you for the AWS credentials provided to you by Nanome
 
-```sh
-cd Desktop
-./configure_windows.ps1
-```
+   ```sh
+   cd Desktop
+   ./configure_windows.ps1
+   ```
 
 4) Once the script has completed, open the Photon Control Panel, and start service. (To be documented later)
