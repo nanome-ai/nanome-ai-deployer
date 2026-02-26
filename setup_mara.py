@@ -19,9 +19,10 @@ def setup_mara(host=None, cert_type=''):
         input('Press ENTER to continue')
 
     if not host:
-        host = input('\nWhat Domain name will you be using for this server? (ex. yourcompany.com) (Defaults to ip address) ')
-        if not host:
-            host = utils.get_public_ip() + '.nip.io'
+        # Check existing env files for a default host
+        existing_mara_env = utils.read_env_file(enums.MARA_ENV_FILE)
+        default_host = utils.extract_host_from_env(existing_mara_env, 'nanome')
+        host = utils.gather_host_info(default=default_host)
 
     # Gather https info if not provided.
     if not cert_type:
@@ -29,7 +30,7 @@ def setup_mara(host=None, cert_type=''):
     protocol = 'http' if cert_type == 'None' else 'https'
 
     # Setup tool-server .env file
-    tool_server_host = f'mara-tools.{host}'
+    tool_server_host = f'nanome-tools.{host}'
     tool_server_env_file = enums.TOOL_SERVER_ENV_FILE
     existing_tool_server_env = utils.read_env_file(tool_server_env_file)
     tool_server_env = mara.configure_tool_server(existing_tool_server_env)
@@ -44,7 +45,7 @@ def setup_mara(host=None, cert_type=''):
         )
     elif cert_type == 'Individual':
         tool_server_env.update(
-            CERT_NAME='mara-tools',
+            CERT_NAME='nanome-tools',
             REQUESTS_CA_BUNDLE='/certs/bundle.pem',
         )
     else:
@@ -54,7 +55,7 @@ def setup_mara(host=None, cert_type=''):
 
     # Configure the mara .env file
     tool_server_api_key = tool_server_env.get('API_KEY', None)
-    mara_host = f'mara.{host}'
+    mara_host = f'nanome.{host}'
     existing_mara_env = utils.read_env_file(enums.MARA_ENV_FILE)
     mara_env = mara.configure_mara_server(existing_mara_env)
 
@@ -71,7 +72,7 @@ def setup_mara(host=None, cert_type=''):
         )
     elif cert_type == 'Individual':
         mara_env.update(
-            CERT_NAME='mara',
+            CERT_NAME='nanome',
             REQUESTS_CA_BUNDLE='/certs/bundle.pem',
         )
     else:
@@ -88,9 +89,9 @@ if __name__ == "__main__":
         mara_host = mara_env['VIRTUAL_HOST']
         tool_server_host = tool_server_env['VIRTUAL_HOST']
         print(
-            "\nYour Services have been configured to run at the following urls\n"
-            f"\t- MARA: {mara_host}\n"
-            f"\t- MARA Tool Server: {tool_server_host}\n"
+            "\nYour services have been configured to run at the following urls\n"
+            f" - Web UI: {mara_host}\n"
+            f" - Tool Server: {tool_server_host}\n"
             "\nTo start the services, run `docker compose up -d`"
         )
     except KeyboardInterrupt:

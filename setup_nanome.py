@@ -10,20 +10,22 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
 def setup_nanome_ai():
+    # Read existing env files to prefill defaults on re-run
+    existing_mara_env = utils.read_env_file(enums.MARA_ENV_FILE)
+    default_host = utils.extract_host_from_env(existing_mara_env, 'nanome')
+
     print(
-        "\nThanks for using Nanome AI! Let's get started setting up your server!\n\n"
+        "\nThanks for using Nanome! Let's get started setting up your server!\n\n"
         "This script will set up the environment variables for 6 docker containers:\n"
         " - Workspace API: The main API for Nanome v2 workspaces.\n"
         " - Workspace DB: The database for the workspace API.\n"
-        " - MARA: Web Application and API for performing comp-chem workflows.\n"
-        " - MARA Tool Server: Runs computations for MARA workflows.\n"
-        " - MARA Embeddings: Vector database for storing embeddings.\n"
+        " - Web UI: Web Application and API for managing workspaces and performing comp-chem workflows.\n"
+        " - Tool Server: Runs computations for MARA workflows.\n"
+        " - Embeddings: Vector database for storing embeddings.\n"
         " - Nanome auth proxy: Proxy for Nanome authentication used by VR headsets.\n"
     )
     input('Press ENTER to continue')
-    host = input('\nWhat Domain name will you be using to access? (i.e. yourcompany.com) (Defaults to ip address) ')
-    if not host:
-        host = utils.get_public_ip() + '.nip.io'
+    host = utils.gather_host_info(default=default_host)
 
     cert_type = utils.gather_https_info(host)
     protocol = 'http' if cert_type == 'None' else 'https'
@@ -53,23 +55,25 @@ def setup_nanome_ai():
     utils.write_env_file(enums.MARA_ENV_FILE, mara_env_vars, append=True)
 
     # Return environment variables for each
-    return workspaces_env, mara_env, tool_server_env
+    return workspaces_env, mara_env, tool_server_env, nanome_auth_env
 
 
 if __name__ == "__main__":
     try:
-        workspaces_env, mara_env, tool_server_env = setup_nanome_ai()
+        workspaces_env, mara_env, tool_server_env, nanome_auth_env = setup_nanome_ai()
         login_to_aws()
 
         workspaces_host = workspaces_env['VIRTUAL_HOST']
         mara_host = mara_env['VIRTUAL_HOST']
         tool_server_host = tool_server_env['VIRTUAL_HOST']
+        auth_proxy_host = nanome_auth_env['VIRTUAL_HOST']
         print(
-            "\nYour Services have been configured to run at the following urls\n"
-            f"\t- MARA: {mara_host}\n"
-            f"\t- Tool Server: {tool_server_host}\n"
-            f"\t- Workspace API: {workspaces_host}\n"
-            "\n To start the services, run `docker compose up -d`"
+            "\nYour services have been configured to run at the following urls\n"
+            f" - Web UI: {mara_host}\n"
+            f" - Tool Server: {tool_server_host}\n"
+            f" - Workspace API: {workspaces_host}\n"
+            f" - Nanome Auth Proxy: {auth_proxy_host}\n"
+            "\nTo start the services, run `docker compose up -d`"
         )
     except KeyboardInterrupt:
         print("\nSetup cancelled")

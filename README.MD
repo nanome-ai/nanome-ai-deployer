@@ -28,7 +28,7 @@ After reboot
 ```sh
 cd nanome-ai-deployer
 source venv/bin/activate
-python setup_nanome_ai.py
+python setup_nanome.py
 docker compose up -d
 ```
 
@@ -79,7 +79,7 @@ docker compose up -d
 
 7)  Run setup script and start services
     ```sh
-    python setup_nanome_ai.py
+    python setup_nanome.py
     docker compose up -d
     ```
 
