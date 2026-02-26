@@ -11,19 +11,17 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 def setup_nanome_ai():
     print(
-        "\nThanks for using Nanome AI! Let's get started setting up your server!\n\n"
+        "\nThanks for using Nanome! Let's get started setting up your server!\n\n"
         "This script will set up the environment variables for 6 docker containers:\n"
         " - Workspace API: The main API for Nanome v2 workspaces.\n"
         " - Workspace DB: The database for the workspace API.\n"
-        " - MARA: Web Application and API for performing comp-chem workflows.\n"
-        " - MARA Tool Server: Runs computations for MARA workflows.\n"
-        " - MARA Embeddings: Vector database for storing embeddings.\n"
+        " - Web UI: Web Application and API for managing workspaces and performing comp-chem workflows.\n"
+        " - Tool Server: Runs computations for MARA workflows.\n"
+        " - Embeddings: Vector database for storing embeddings.\n"
         " - Nanome auth proxy: Proxy for Nanome authentication used by VR headsets.\n"
     )
     input('Press ENTER to continue')
-    host = input('\nWhat Domain name will you be using to access? (i.e. yourcompany.com) (Defaults to ip address) ')
-    if not host:
-        host = utils.get_public_ip() + '.nip.io'
+    host = utils.gather_host_info()
 
     cert_type = utils.gather_https_info(host)
     protocol = 'http' if cert_type == 'None' else 'https'
@@ -66,7 +64,7 @@ if __name__ == "__main__":
         tool_server_host = tool_server_env['VIRTUAL_HOST']
         print(
             "\nYour Services have been configured to run at the following urls\n"
-            f"\t- MARA: {mara_host}\n"
+            f"\t- Web UI: {mara_host}\n"
             f"\t- Tool Server: {tool_server_host}\n"
             f"\t- Workspace API: {workspaces_host}\n"
             "\n To start the services, run `docker compose up -d`"

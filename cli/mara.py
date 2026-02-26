@@ -89,8 +89,23 @@ def configure_azure_envvars(mara_env) -> dict:
     return env
 
 def configure_mara_server(existing_mara_env) -> dict:
-    azure_provider = None
     env = {}
+
+    # Ask if the user wants to set up AI features
+    enable_ai = None
+    while enable_ai not in ['1', '2']:
+        enable_ai = input((
+            '\n\nWould you like to set up AI chat features?\n'
+            '1. Yes\n'
+            '2. No (workspace management only)\n\n'
+            'Make a selection (1|2): '
+        ))
+
+    if enable_ai == '2':
+        env['LLM_API_KEY'] = ''
+        return env
+
+    azure_provider = None
     while azure_provider not in ['1', '2']:
         azure_provider = input((
             '\n\nWill you be using Microsoft Azure-hosted LLMs?\n'

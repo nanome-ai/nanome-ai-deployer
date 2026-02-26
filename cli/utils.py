@@ -9,6 +9,12 @@ import yaml
 
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
+def gather_host_info():
+    host = input('\nWhat domain name will you be using to access? (e.g. yourcompany.com) (defaults to ip address)\n\nEnter domain: ')
+    if not host:
+        host = get_public_ip() + '.nip.io'
+    return host
+
 
 def generate_random_password(length=16):
     characters = string.ascii_letters + string.digits
@@ -42,7 +48,7 @@ def has_default_certs(path, enforce=False):
 
 def has_individual_certs(path, enforce=False):
     has_certs = True
-    for name in ['mara', 'mara-tools', 'workspaces']:
+    for name in ['nanome', 'nanome-tools', 'workspaces']:
         if not check_certs(path, name, enforce=enforce):
             has_certs = False
             break
@@ -81,8 +87,8 @@ def gather_https_info(host):
                 "\n\nEnter path containing either:\n"
                 f"  default.crt/default.key covering *.{host}\n"
                 "or\n"
-                f"  mara.crt/mara.key covering mara.{host}\n"
-                f"  mara-tools.crt/mara-tools.key covering mara-tools.{host}\n"
+                f"  nanome.crt/nanome.key covering nanome.{host}\n"
+                f"  nanome-tools.crt/nanome-tools.key covering nanome-tools.{host}\n"
                 f"  workspaces.crt/workspaces.key covering workspaces.{host}\n"
                 "\nEnter path: "
             )
@@ -105,7 +111,7 @@ def gather_https_info(host):
                         dest_key.write(src_key.read())
                 print("Copied default certificates to ./certs.")
             elif has_individual:
-                for name in ['mara', 'mara-tools', 'workspaces']:
+                for name in ['nanome', 'nanome-tools', 'workspaces']:
                     check_certs(certs_path, name, enforce=True)
                     with open(os.path.join(certs_path, f'{name}.crt'), 'rb') as src_cert:
                         with open(f'./certs/{name}.crt', 'wb') as dest_cert:
@@ -123,7 +129,7 @@ def gather_https_info(host):
                 with open('./certs/default.crt', 'r') as cert_file:
                     bundle_file.write(cert_file.read())
             elif has_individual:
-                for name in ['mara', 'mara-tools', 'workspaces']:
+                for name in ['nanome', 'nanome-tools', 'workspaces']:
                     with open(f'./certs/{name}.crt', 'r') as cert_file:
                         bundle_file.write(cert_file.read())
 
