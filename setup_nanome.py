@@ -55,22 +55,24 @@ def setup_nanome_ai():
     utils.write_env_file(enums.MARA_ENV_FILE, mara_env_vars, append=True)
 
     # Return environment variables for each
-    return workspaces_env, mara_env, tool_server_env
+    return workspaces_env, mara_env, tool_server_env, nanome_auth_env
 
 
 if __name__ == "__main__":
     try:
-        workspaces_env, mara_env, tool_server_env = setup_nanome_ai()
+        workspaces_env, mara_env, tool_server_env, nanome_auth_env = setup_nanome_ai()
         login_to_aws()
 
         workspaces_host = workspaces_env['VIRTUAL_HOST']
         mara_host = mara_env['VIRTUAL_HOST']
         tool_server_host = tool_server_env['VIRTUAL_HOST']
+        auth_proxy_host = nanome_auth_env['VIRTUAL_HOST']
         print(
             "\nYour services have been configured to run at the following urls\n"
             f" - Web UI: {mara_host}\n"
             f" - Tool Server: {tool_server_host}\n"
             f" - Workspace API: {workspaces_host}\n"
+            f" - Nanome Auth Proxy: {auth_proxy_host}\n"
             "\nTo start the services, run `docker compose up -d`"
         )
     except KeyboardInterrupt:
