@@ -19,7 +19,10 @@ def setup_mara(host=None, cert_type=''):
         input('Press ENTER to continue')
 
     if not host:
-        host = utils.gather_host_info()
+        # Check existing env files for a default host
+        existing_mara_env = utils.read_env_file(enums.MARA_ENV_FILE)
+        default_host = utils.extract_host_from_env(existing_mara_env, 'nanome')
+        host = utils.gather_host_info(default=default_host)
 
     # Gather https info if not provided.
     if not cert_type:
@@ -86,9 +89,9 @@ if __name__ == "__main__":
         mara_host = mara_env['VIRTUAL_HOST']
         tool_server_host = tool_server_env['VIRTUAL_HOST']
         print(
-            "\nYour Services have been configured to run at the following urls\n"
-            f"\t- MARA: {mara_host}\n"
-            f"\t- MARA Tool Server: {tool_server_host}\n"
+            "\nYour services have been configured to run at the following urls\n"
+            f" - Web UI: {mara_host}\n"
+            f" - Tool Server: {tool_server_host}\n"
             "\nTo start the services, run `docker compose up -d`"
         )
     except KeyboardInterrupt:

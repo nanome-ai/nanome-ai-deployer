@@ -9,9 +9,54 @@ import yaml
 
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
-def gather_host_info():
-    host = input('\nWhat domain name will you be using to access? (e.g. yourcompany.com) (defaults to ip address)\n\nEnter domain: ')
-    if not host:
+
+def ask_selection(question, options, default=None):
+    """Prompt the user to select from numbered options.
+
+    Args:
+        question: The question text to display.
+        options: List of option labels (displayed as 1., 2., etc.).
+        default: 1-indexed default option number, or None.
+
+    Returns:
+        The selected option number as a string ('1', '2', etc.).
+    """
+    option_lines = '\n'.join(f'{i}. {opt}' for i, opt in enumerate(options, 1))
+    default_hint = f' [{default}]' if default else ''
+
+    valid = [str(i) for i in range(1, len(options) + 1)]
+    if default:
+        valid.append('')
+
+    selection = None
+    while selection not in valid:
+        selection = input(
+            f'\n\n{question}\n'
+            f'{option_lines}\n\n'
+            f'Make a selection{default_hint}: '
+        )
+
+    return selection if selection != '' else str(default)
+
+
+def extract_host_from_env(env_dict, prefix):
+    """Extract the base host from a VIRTUAL_HOST value by stripping a known prefix.
+
+    e.g. VIRTUAL_HOST='nanome.company.com' with prefix='nanome' -> 'company.com'
+    """
+    virtual_host = env_dict.get('VIRTUAL_HOST', '')
+    expected_prefix = f'{prefix}.'
+    if virtual_host.startswith(expected_prefix):
+        return virtual_host[len(expected_prefix):]
+    return None
+
+
+def gather_host_info(default=None):
+    default_hint = f'[{default}]' if default else '(defaults to <IP>.nip.io)'
+    host = input(f'\n\nWhat domain name will you be using to access? (e.g. example.com)\nEnter domain {default_hint}: ')
+    if not host and default:
+        host = default
+    elif not host:
         host = get_public_ip() + '.nip.io'
     return host
 
@@ -60,24 +105,19 @@ def gather_https_info(host):
     has_default = has_default_certs('./certs')
     has_individual = has_individual_certs('./certs')
     if has_default or has_individual:
-        while use_existing not in ['1', '2']:
-            use_existing = input(
-                "\n\nFound existing TLS certificates in ./certs\n"
-                "Would you like to use these for HTTPS?\n"
-                "1. Yes\n"
-                "2. No\n\n"
-                "Make a selection (1|2): "
-            )
+        use_existing = ask_selection(
+            "Found existing TLS certificates in ./certs\n"
+            "Would you like to use these for HTTPS?",
+            ['Yes', 'No'],
+            default=1,
+        )
 
     if use_existing != '1':
-        https_input = None
-        while https_input not in ['1', '2']:
-            https_input = input(
-                "\n\nDo you have local TLS certificates you would like to use for HTTPS?\n"
-                "1. Yes\n"
-                "2. No\n\n"
-                "Make a selection (1|2): "
-            )
+        https_input = ask_selection(
+            "Do you have local TLS certificates you would like to use for HTTPS?",
+            ['Yes', 'No'],
+            default=2,
+        )
         if https_input != '1':
             return 'None'
 
