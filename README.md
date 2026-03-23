@@ -83,6 +83,33 @@ docker compose up -d
     docker compose up -d
     ```
 
+### Troubleshooting
+
+- **"An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation" during setup**
+  The AWS credentials were likely entered incorrectly. You'll have the opportunity to reenter them when you run `setup_nanome.py`. Alternatively, you can edit them directly by opening `~/.aws/credentials` in a text editor.
+
+- **"Address already in use" error when starting services**
+  Another program on the server is already using port 80. To find out what it is, run:
+  ```sh
+  sudo lsof -i :80
+  ```
+  If the program is nginx (a web server sometimes included in the base VM image), you can remove it and restart:
+  ```sh
+  sudo apt remove nginx nginx-common
+  docker compose down
+  docker compose up -d
+  ```
+
+- **MARA returns a "certificate verify failed" error when running some tools like Download from RCSB**
+  Your network may be using SSL introspection, which interferes with outbound requests. Contact your IT team to request an exemption, or reach out to Nanome support for a list of domains that need to be whitelisted (e.g. rcsb.org).
+
+- **Web UI shows "Failed to fetch" or you cannot create a workspace**
+  The Workspace API service may not be running. Check its logs for errors:
+  ```sh
+  docker compose logs workspace-api
+  ```
+  Also verify that the URL in your `.env.workspaces` file is correct.
+
 ## Configuring Windows Server
 
 This Repo contains a Powershell script `configure_windows.ps1` for downloading and installing Photon on the Windows Server
