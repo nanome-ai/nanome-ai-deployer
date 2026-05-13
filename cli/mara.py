@@ -1,7 +1,6 @@
-import getpass
 import json
 
-from .utils import ask_selection, generate_random_password, PLAYBOOKS_DIR
+from .utils import ask_selection, generate_random_password, masked_input
 
 
 # Keys this file is responsible for. Anything here gets cleared from the env on
@@ -42,7 +41,7 @@ def configure_tool_server(existing_env=None) -> dict:
 
 def _prompt_with_default(label, current, default=None, is_secret=False):
     """Show current value (masked if secret), accept ENTER to keep, or new input."""
-    prompt_fn = getpass.getpass if is_secret else input
+    prompt_fn = masked_input if is_secret else input
     if current:
         display = f"{'*' * len(current[:-4])}{current[-4:]}" if is_secret else current
         modify = input(f'\n{label} is set to "{display}".\nPress ENTER to keep, or "1" to modify: ')
@@ -271,7 +270,7 @@ def configure_azure_envvars(mara_env) -> dict:
 def _collect_llm_api_key(existing_mara_env) -> str:
     existing_llm_key = existing_mara_env.get('LLM_API_KEY', None)
     if not existing_llm_key:
-        return getpass.getpass("\nEnter LLM_API_KEY (input will not be visible): ")
+        return masked_input("\nEnter LLM_API_KEY: ")
 
     choice = ask_selection(
         'LLM API Key',
@@ -281,9 +280,9 @@ def _collect_llm_api_key(existing_mara_env) -> str:
     if choice == '1':
         return existing_llm_key
     masked = f"{'*' * len(existing_llm_key[:-4])}{existing_llm_key[-4:]}"
-    return getpass.getpass((
+    return masked_input((
         f"\nCurrent LLM_API_KEY: {masked or 'None'}"
-        "\nNew LLM_API_KEY (input will not be visible): "
+        "\nNew LLM_API_KEY: "
     ))
 
 
