@@ -17,6 +17,11 @@ PROVIDER_ENV_KEYS = (
     'LLM_MODEL_MD',
     'LLM_MODEL_SM',
     'EMBEDDING_MODEL',
+    'AWS_AUTH_MODE',
+    'AWS_REGION',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_SESSION_TOKEN',
     'AZURE_LLM_API_VERSION',
     'AZURE_EMBEDDING_API_VERSION',
     'AZURE_AUTH_MODE',
@@ -51,9 +56,8 @@ def _prompt_with_default(label, current, default=None, is_secret=False):
 
 
 def _ensure_provider_prefix(model, provider):
-    """Force a ``provider:model`` string. Bare models on Anthropic/explicit OpenAI
-    paths get prefixed; already-prefixed strings pass through."""
-    if not model or ':' in model:
+    """Force a ``provider:model`` string."""
+    if not model:
         return model
     return f'{provider}:{model}'
 
@@ -107,12 +111,61 @@ def configure_anthropic_envvars(mara_env) -> dict:
     return _prompt_model_tiers(
         mara_env,
         defaults=(
-            'anthropic:claude-opus-4-7',
-            'anthropic:claude-sonnet-4-6',
-            'anthropic:claude-sonnet-4-6',
+            'claude-opus-4-7',
+            'claude-sonnet-4-6',
+            'claude-haiku-4-5',
         ),
         provider_prefix='anthropic',
     )
+
+
+def configure_bedrock_envvars(mara_env) -> dict:
+    """AWS Bedrock. Reuses the Anthropic Messages API surface through the
+    ``anthropic[bedrock]`` SDK, so only the model IDs and AWS auth differ.
+
+    Models are stored as ``bedrock:<bedrock-model-id>``..
+    """
+    env: dict = {}
+
+    print("\nNote: current only Anthropic Claude models on Bedrock are supported.")
+
+    region = _prompt_with_default(
+        'AWS_REGION',
+        mara_env.get('AWS_REGION'),
+        default='us-east-1',
+    )
+    env['AWS_REGION'] = region
+
+    tiers = _prompt_model_tiers(
+        mara_env,
+        defaults=(
+            'anthropic.claude-opus-4-7',
+            'anthropic.claude-sonnet-4-6',
+            'anthropic.claude-haiku-4-5-20251001-v1:0',
+        ),
+        provider_prefix='bedrock',
+    )
+    env.update(tiers)
+
+    # Auth: access keys only
+    env['AWS_AUTH_MODE'] = 'access_key'
+    env['AWS_ACCESS_KEY_ID'] = _prompt_with_default(
+        'AWS_ACCESS_KEY_ID', mara_env.get('AWS_ACCESS_KEY_ID'),
+    )
+    env['AWS_SECRET_ACCESS_KEY'] = _prompt_with_default(
+        'AWS_SECRET_ACCESS_KEY',
+        mara_env.get('AWS_SECRET_ACCESS_KEY'),
+        is_secret=True,
+    )
+    session_token = _prompt_with_default(
+        'AWS_SESSION_TOKEN (optional, leave blank if not using temporary creds)',
+        mara_env.get('AWS_SESSION_TOKEN'),
+        is_secret=True,
+    )
+    if session_token:
+        env['AWS_SESSION_TOKEN'] = session_token
+
+    return env
 
 
 def configure_azure_envvars(mara_env) -> dict:
@@ -159,20 +212,19 @@ def configure_azure_envvars(mara_env) -> dict:
 
     # Auth method
     existing_mode = mara_env.get('AZURE_AUTH_MODE', 'api_key').lower()
-    default_choice = {'api_key': 1, 'service_principal': 2, 'default': 3}.get(existing_mode, 1)
+    default_choice = {'api_key': 1, 'service_principal': 2}.get(existing_mode, 1)
     auth_choice = ask_selection(
         'How should the container authenticate to Azure?',
         [
             'API key (LLM_API_KEY)',
             'Service Principal (tenant + client id + client secret)',
-            'DefaultAzureCredential (AKS workload identity / Azure-hosted managed identity)',
         ],
         default=default_choice,
     )
 
     if auth_choice == '1':
         env['AZURE_AUTH_MODE'] = 'api_key'
-    elif auth_choice == '2':
+    else:
         env['AZURE_AUTH_MODE'] = 'service_principal'
         env['AZURE_TENANT_ID'] = _prompt_with_default(
             'AZURE_TENANT_ID', mara_env.get('AZURE_TENANT_ID'),
@@ -189,19 +241,6 @@ def configure_azure_envvars(mara_env) -> dict:
             'AZURE_TOKEN_SCOPE',
             mara_env.get('AZURE_TOKEN_SCOPE'),
             default='https://cognitiveservices.azure.com/.default',
-        )
-    else:
-        env['AZURE_AUTH_MODE'] = 'default'
-        env['AZURE_TOKEN_SCOPE'] = _prompt_with_default(
-            'AZURE_TOKEN_SCOPE',
-            mara_env.get('AZURE_TOKEN_SCOPE'),
-            default='https://cognitiveservices.azure.com/.default',
-        )
-        print(
-            "\nNote: DefaultAzureCredential only resolves on Azure-managed compute "
-            "(AKS workload identity, Container Apps, App Service, VMs with managed "
-            "identity) or when AZURE_* env vars are injected into the container. "
-            "It will not work on plain Docker hosts off-Azure — use Service Principal there."
         )
 
     # APIM subscription key (optional, layered on top of the auth above)
@@ -260,11 +299,13 @@ def configure_mara_server(existing_mara_env) -> dict:
     prior_type = (existing_mara_env.get('OPENAI_API_TYPE') or '').lower()
     prior_model = existing_mara_env.get('LLM_MODEL') or ''
     if prior_type == 'azure':
-        prior_provider = 2
-    elif prior_model.startswith('anthropic:'):
+        prior_provider = 4
+    elif prior_model.startswith('bedrock:'):
         prior_provider = 3
-    else:
+    elif prior_model.startswith('anthropic:'):
         prior_provider = 1
+    else:
+        prior_provider = 2
 
     existing_llm_key = existing_mara_env.get('LLM_API_KEY', None)
     enable_ai = ask_selection(
@@ -278,22 +319,28 @@ def configure_mara_server(existing_mara_env) -> dict:
 
     llm_provider = ask_selection(
         'Which LLM provider are you using?',
-        ['OpenAI', 'Microsoft Azure (Foundry)', 'Anthropic'],
+        ['Anthropic', 'OpenAI', 'AWS Bedrock', 'Microsoft Foundry (Azure)'],
         default=prior_provider,
     )
 
-    if llm_provider == '2':
-        provider_env = configure_azure_envvars(existing_mara_env)
+    same_provider = llm_provider == str(prior_provider)
+    config_env = existing_mara_env if same_provider else base_env
+
+    if llm_provider == '1':
+        env.update(configure_anthropic_envvars(config_env))
+        env['LLM_API_KEY'] = _collect_llm_api_key(config_env)
+    elif llm_provider == '2':
+        env.update(configure_openai_envvars(config_env))
+        env['LLM_API_KEY'] = _collect_llm_api_key(config_env)
+    elif llm_provider == '3':
+        # Bedrock authenticates via AWS creds, not LLM_API_KEY.
+        env.update(configure_bedrock_envvars(config_env))
+    elif llm_provider == '4':
+        provider_env = configure_azure_envvars(config_env)
         env.update(provider_env)
         # Service principal / managed identity flows authenticate via Entra
         # tokens; no static API key is needed (or wanted) in that case.
         if provider_env.get('AZURE_AUTH_MODE') == 'api_key':
-            env['LLM_API_KEY'] = _collect_llm_api_key(existing_mara_env)
-    elif llm_provider == '3':
-        env.update(configure_anthropic_envvars(existing_mara_env))
-        env['LLM_API_KEY'] = _collect_llm_api_key(existing_mara_env)
-    else:
-        env.update(configure_openai_envvars(existing_mara_env))
-        env['LLM_API_KEY'] = _collect_llm_api_key(existing_mara_env)
+            env['LLM_API_KEY'] = _collect_llm_api_key(config_env)
 
     return env
