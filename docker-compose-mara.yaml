@@ -11,8 +11,13 @@ services:
       - FILES_DIR=/data/files
     env_file: .env.maraserver
     depends_on:
-      - mara-embeddings
-      - mara-tool-server
+      mara-embeddings:
+        condition: service_started
+      mara-tool-server:
+        condition: service_healthy
+      mara-hf-tei:
+        condition: service_healthy
+        required: false
     volumes:
       - mara-ai-volume:/data
       - ./certs:/certs:ro
@@ -20,6 +25,13 @@ services:
       - nanome-ai-network
     ports:
       - 8000
+    # Slim images don't ship curl/wget, but python+urllib are present.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/api/info',timeout=3)\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
   mara-embeddings:
     image: chromadb/chroma:0.6.3
     environment:
@@ -45,6 +57,26 @@ services:
       - nanome-ai-network
     ports:
       - 8001
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://localhost:8001/',timeout=3)\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+  mara-hf-tei:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.9
+    profiles: ["local-embeddings"]
+    command: ["--model-id", "${TEI_MODEL_ID:-BAAI/bge-large-en-v1.5}", "--max-client-batch-size", "512"]
+    volumes:
+      - mara-hf-tei-volume:/data
+    networks:
+      - nanome-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 600s
   nginx-proxy:
     image: jwilder/nginx-proxy:1.6.4
     container_name: nginx-proxy
@@ -65,4 +97,5 @@ networks:
 volumes:
   mara-ai-volume:
   mara-embeddings-volume:
+  mara-hf-tei-volume:
   mara-tool-volume:

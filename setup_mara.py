@@ -7,6 +7,27 @@ PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 EMBEDDINGS_VOLUME = 'nanome-ai-deployer_mara-embeddings-volume'
 
 
+def _write_compose_env(mara_env):
+    """Manage the root .env that ``docker compose`` reads.
+
+    Toggles the ``local-embeddings`` profile (which gates the bundled
+    ``mara-hf-tei`` service) and forwards the chosen HF model id so the
+    TEI container loads the same one mara-ai will query. The marker is
+    ``EMBEDDING_API_URL`` — only the local-embeddings branch sets it.
+    """
+    compose_env = utils.read_env_file(enums.COMPOSE_ENV_FILE)
+    uses_local_embeddings = (mara_env.get('EMBEDDING_API_URL') or '').startswith(
+        'http://mara-hf-tei'
+    )
+    if uses_local_embeddings:
+        compose_env['COMPOSE_PROFILES'] = 'local-embeddings'
+        compose_env['TEI_MODEL_ID'] = mara_env.get('EMBEDDING_MODEL', '')
+    else:
+        compose_env.pop('COMPOSE_PROFILES', None)
+        compose_env.pop('TEI_MODEL_ID', None)
+    utils.write_env_file(enums.COMPOSE_ENV_FILE, compose_env)
+
+
 def _warn_if_embedding_model_changed(old, new):
     """Chroma persists vectors in a model-specific space and dimensionality.
     Switching ``EMBEDDING_MODEL`` makes existing vectors incompatible, the
@@ -102,6 +123,7 @@ def setup_mara(host=None, cert_type=''):
         mara_env.pop('REQUESTS_CA_BUNDLE', None)
 
     utils.write_env_file(enums.MARA_ENV_FILE, mara_env)
+    _write_compose_env(mara_env)
     return mara_env, tool_server_env
 
 

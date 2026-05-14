@@ -16,6 +16,10 @@ PROVIDER_ENV_KEYS = (
     'LLM_MODEL_MD',
     'LLM_MODEL_SM',
     'EMBEDDING_MODEL',
+    'EMBEDDING_API_URL',
+    'EMBEDDING_API_KEY',
+    'VOYAGE_API_KEY',
+    'VOYAGE_API_URL',
     'AWS_AUTH_MODE',
     'AWS_REGION',
     'AWS_ACCESS_KEY_ID',
@@ -78,9 +82,13 @@ def _prompt_model_tiers(mara_env, defaults, label_prefix='', provider_prefix=Non
     forces ``provider:model`` strings (used for Anthropic).
     """
     out = {}
+    prefix_token = f'{provider_prefix}:' if provider_prefix else None
     for (key, purpose), default in zip(TIER_PROMPTS, defaults):
         label = f'{key}{label_prefix} ({purpose})'
-        value = _prompt_with_default(label, mara_env.get(key), default=default)
+        existing = mara_env.get(key)
+        if prefix_token and existing and existing.startswith(prefix_token):
+            existing = existing[len(prefix_token):]
+        value = _prompt_with_default(label, existing, default=default)
         if provider_prefix:
             value = _ensure_provider_prefix(value, provider_prefix)
         out[key] = value
@@ -106,8 +114,12 @@ def configure_anthropic_envvars(mara_env) -> dict:
 
     Models are stored as ``anthropic:<name>`` so the provider-aware client
     factory routes correctly even if other settings change later.
+
+    Anthropic has no embeddings API, so the operator picks a separate
+    embedding provider — Voyage AI (managed) or a local HuggingFace TEI
+    container served on an OpenAI-compatible endpoint.
     """
-    return _prompt_model_tiers(
+    env: dict = _prompt_model_tiers(
         mara_env,
         defaults=(
             'claude-opus-4-7',
@@ -116,6 +128,55 @@ def configure_anthropic_envvars(mara_env) -> dict:
         ),
         provider_prefix='anthropic',
     )
+
+    existing_embedding = mara_env.get('EMBEDDING_MODEL') or ''
+    default_choice = 2 if existing_embedding and not existing_embedding.startswith('voyage:') else 1
+    embedding_choice = ask_selection(
+        'Anthropic has no embeddings API. Which embedding provider should MARA use?',
+        [
+            'Voyage AI (managed, requires API key)',
+            'Local (HuggingFace TEI container — slow on CPU, uses ~2GB RAM, '
+            'and first startup can take a few minutes while the model downloads)',
+        ],
+        default=default_choice,
+    )
+
+    if embedding_choice == '1':
+        existing_voyage_model = existing_embedding
+        if existing_voyage_model.startswith('voyage:'):
+            existing_voyage_model = existing_voyage_model[len('voyage:'):]
+        else:
+            existing_voyage_model = ''
+        voyage_model = _prompt_with_default(
+            'EMBEDDING_MODEL (Voyage model)',
+            existing_voyage_model,
+            default='voyage-4-large',
+        )
+        env['EMBEDDING_MODEL'] = _ensure_provider_prefix(voyage_model, 'voyage')
+        env['VOYAGE_API_KEY'] = _prompt_with_default(
+            'VOYAGE_API_KEY',
+            mara_env.get('VOYAGE_API_KEY'),
+            is_secret=True,
+        )
+    else:
+        # Local TEI runs as the `mara-hf-tei` service in docker-compose-mara.yaml,
+        # gated by the `local-embeddings` compose profile. setup_mara.py turns
+        # the profile on by writing COMPOSE_PROFILES into the root .env.
+        local_default_model = 'BAAI/bge-large-en-v1.5'
+        existing_local_model = existing_embedding
+        if existing_local_model.startswith(('voyage:', 'bedrock:')):
+            existing_local_model = ''
+        env['EMBEDDING_MODEL'] = _prompt_with_default(
+            'EMBEDDING_MODEL (HuggingFace model id served by TEI)',
+            existing_local_model,
+            default=local_default_model,
+        )
+        # Joins the compose network — no need to publish the TEI port to the host.
+        env['EMBEDDING_API_URL'] = 'http://mara-hf-tei:80/v1'
+        # TEI ignores the auth header but the OpenAI client requires a non-empty key.
+        env['EMBEDDING_API_KEY'] = 'unused'
+
+    return env
 
 
 def configure_bedrock_envvars(mara_env) -> dict:
