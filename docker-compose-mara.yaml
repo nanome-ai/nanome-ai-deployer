@@ -27,7 +27,7 @@ services:
       - 8000
     # Slim images don't ship curl/wget, but python+urllib are present.
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/api/info',timeout=3)\" || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/health',timeout=3)\" || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -58,7 +58,7 @@ services:
     ports:
       - 8001
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://localhost:8001/',timeout=3)\" || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; urllib.request.urlopen('http://localhost:8001/health',timeout=3)\" || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
