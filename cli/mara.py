@@ -340,22 +340,11 @@ def configure_azure_envvars(mara_env) -> dict:
 
 
 def _collect_llm_api_key(existing_mara_env) -> str:
-    existing_llm_key = existing_mara_env.get('LLM_API_KEY', None)
-    if not existing_llm_key:
-        return masked_input("\nEnter LLM_API_KEY: ")
-
-    choice = ask_selection(
-        'LLM API Key',
-        ['Use existing key', 'Update key'],
-        default=1,
+    return _prompt_with_default(
+        'LLM_API_KEY',
+        existing_mara_env.get('LLM_API_KEY'),
+        is_secret=True,
     )
-    if choice == '1':
-        return existing_llm_key
-    masked = f"{'*' * len(existing_llm_key[:-4])}{existing_llm_key[-4:]}"
-    return masked_input((
-        f"\nCurrent LLM_API_KEY: {masked or 'None'}"
-        "\nNew LLM_API_KEY: "
-    ))
 
 
 def configure_mara_server(existing_mara_env) -> dict:
