@@ -38,7 +38,7 @@ def _warn_if_embedding_model_changed(old, new):
     print(
         f"\n!! EMBEDDING_MODEL changed: {old} -> {new}\n"
         "   Persisted embedding vectors are incompatible with the new model.\n"
-        "   Before `docker compose up -d`, run:\n"
+        "   Before `docker compose up -d --wait`, run:\n"
         "     docker compose down\n"
         f"     docker volume rm {EMBEDDINGS_VOLUME}\n"
     )
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             "\nYour services have been configured to run at the following urls\n"
             f" - Web UI: {mara_host}\n"
             f" - Tool Server: {tool_server_host}\n"
-            "\nTo start the services, run `docker compose up -d`"
+            "\nTo start the services, run `docker compose up -d --wait`"
         )
     except KeyboardInterrupt:
         print("\nSetup cancelled")

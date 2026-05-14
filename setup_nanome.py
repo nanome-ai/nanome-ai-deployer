@@ -73,7 +73,7 @@ if __name__ == "__main__":
             f" - Tool Server: {tool_server_host}\n"
             f" - Workspace API: {workspaces_host}\n"
             f" - Nanome Auth Proxy: {auth_proxy_host}\n"
-            "\nTo start the services, run `docker compose up -d`"
+            "\nTo start the services, run `docker compose up -d --wait`"
         )
     except KeyboardInterrupt:
         print("\nSetup cancelled")
