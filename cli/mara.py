@@ -126,7 +126,8 @@ def configure_bedrock_envvars(mara_env) -> dict:
     """
     env: dict = {}
 
-    print("\nNote: current only Anthropic Claude models on Bedrock are supported.")
+    print("\nNote: chat models must be Anthropic Claude on Bedrock.")
+    print("Embedding models support Cohere (cohere.*) and Amazon Titan (amazon.titan-embed-*).")
 
     region = _prompt_with_default(
         'AWS_REGION',
@@ -138,13 +139,23 @@ def configure_bedrock_envvars(mara_env) -> dict:
     tiers = _prompt_model_tiers(
         mara_env,
         defaults=(
-            'anthropic.claude-opus-4-7',
-            'anthropic.claude-sonnet-4-6',
-            'anthropic.claude-haiku-4-5-20251001-v1:0',
+            'global.anthropic.claude-opus-4-7',
+            'global.anthropic.claude-sonnet-4-6',
+            'global.anthropic.claude-haiku-4-5-20251001-v1:0',
         ),
         provider_prefix='bedrock',
     )
     env.update(tiers)
+
+    existing_embedding = mara_env.get('EMBEDDING_MODEL') or ''
+    if existing_embedding.startswith('bedrock:'):
+        existing_embedding = existing_embedding[len('bedrock:'):]
+    embedding_model = _prompt_with_default(
+        'EMBEDDING_MODEL (Bedrock model ID)',
+        existing_embedding,
+        default='cohere.embed-v4:0',
+    )
+    env['EMBEDDING_MODEL'] = _ensure_provider_prefix(embedding_model, 'bedrock')
 
     # Auth: access keys only
     env['AWS_AUTH_MODE'] = 'access_key'

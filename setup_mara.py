@@ -4,6 +4,23 @@ import os
 from cli import utils, mara
 
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
+EMBEDDINGS_VOLUME = 'nanome-ai-deployer_mara-embeddings-volume'
+
+
+def _warn_if_embedding_model_changed(old, new):
+    """Chroma persists vectors in a model-specific space and dimensionality.
+    Switching ``EMBEDDING_MODEL`` makes existing vectors incompatible, the
+    operator must drop the volume before bringing the stack back up.
+    """
+    if not old or not new or old == new:
+        return
+    print(
+        f"\n!! EMBEDDING_MODEL changed: {old} -> {new}\n"
+        "   Persisted embedding vectors are incompatible with the new model.\n"
+        "   Before `docker compose up -d`, run:\n"
+        "     docker compose down\n"
+        f"     docker volume rm {EMBEDDINGS_VOLUME}\n"
+    )
 
 
 def setup_mara(host=None, cert_type=''):
@@ -58,6 +75,11 @@ def setup_mara(host=None, cert_type=''):
     mara_host = f'nanome.{host}'
     existing_mara_env = utils.read_env_file(enums.MARA_ENV_FILE)
     mara_env = mara.configure_mara_server(existing_mara_env)
+
+    _warn_if_embedding_model_changed(
+        old=existing_mara_env.get('EMBEDDING_MODEL'),
+        new=mara_env.get('EMBEDDING_MODEL'),
+    )
 
     mara_env.update(
         API_HOST=mara_host,
