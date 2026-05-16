@@ -10,6 +10,80 @@ import yaml
 PLAYBOOKS_DIR = os.path.join(os.path.dirname(__file__), 'playbooks')
 
 
+def masked_input(prompt: str) -> str:
+    """Read a line from stdin, echoing ``*`` per character.
+
+    Unlike ``getpass.getpass`` (silent), this lets the operator see the
+    length of what they typed or pasted. Falls back to ``getpass.getpass``
+    if stdin is not a tty (CI, piped input).
+    """
+    if not sys.stdin.isatty():
+        return getpass.getpass(prompt)
+
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+
+    if sys.platform == 'win32':
+        import msvcrt
+        buf = []
+        while True:
+            ch = msvcrt.getwch()
+            if ch in ('\r', '\n'):
+                sys.stdout.write('\n')
+                sys.stdout.flush()
+                return ''.join(buf)
+            if ch == '\x03':  # Ctrl-C
+                sys.stdout.write('\n')
+                raise KeyboardInterrupt
+            if ch in ('\b', '\x7f'):
+                if buf:
+                    buf.pop()
+                    sys.stdout.write('\b \b')
+                    sys.stdout.flush()
+                continue
+            if ch == '\x00' or ch == '\xe0':
+                # function/arrow keys send a two-byte sequence; consume the
+                # second byte and ignore — we don't support cursor movement.
+                msvcrt.getwch()
+                continue
+            buf.append(ch)
+            sys.stdout.write('*')
+            sys.stdout.flush()
+
+    import termios
+    import tty
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        buf = []
+        while True:
+            ch = sys.stdin.read(1)
+            if ch in ('\r', '\n'):
+                sys.stdout.write('\n')
+                sys.stdout.flush()
+                return ''.join(buf)
+            if ch == '\x03':  # Ctrl-C
+                sys.stdout.write('\n')
+                raise KeyboardInterrupt
+            if ch in ('\x7f', '\b'):
+                if buf:
+                    buf.pop()
+                    sys.stdout.write('\b \b')
+                    sys.stdout.flush()
+                continue
+            # Strip ASCII control chars (incl. start of escape sequences from
+            # arrow keys or bracketed-paste markers) so they don't render as
+            # asterisks. Real password chars are all printable.
+            if ord(ch) < 32:
+                continue
+            buf.append(ch)
+            sys.stdout.write('*')
+            sys.stdout.flush()
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+
 def ask_selection(question, options, default=None):
     """Prompt the user to select from numbered options.
 
