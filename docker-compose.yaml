@@ -7,10 +7,7 @@ services:
     environment:
       - VIRTUAL_PORT=8002
       - PORT=8002
-      - AUTH_API=https://api.nanome.ai
       - DB_HOST=workspace-db
-      - DB_OLD_PATH=/data/workspace-api.db
-      - ENV=dev
     env_file: .env.workspaces
     networks:
       - nanome-ai-network
