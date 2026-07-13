@@ -3,6 +3,7 @@ services:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-enterprise:latest
     pull_policy: always
     stop_grace_period: 1s
+    profiles: ["web"]
     environment:
       - VIRTUAL_PORT=8000
       - CHROMA_URL=mara-embeddings
@@ -34,6 +35,7 @@ services:
       start_period: 120s
   mara-embeddings:
     image: chromadb/chroma:0.6.3
+    profiles: ["web"]
     environment:
       - ANONYMIZED_TELEMETRY=False
       - CHROMA_HOST_PORT=8002
@@ -48,6 +50,7 @@ services:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/mara-tool-server-enterprise:latest
     pull_policy: always
     stop_grace_period: 1s
+    profiles: ["web"]
     env_file: .env.toolserver
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

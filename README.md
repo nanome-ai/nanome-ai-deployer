@@ -28,16 +28,28 @@ After reboot
 ```sh
 cd nanome-ai-deployer
 source venv/bin/activate
-python setup_nanome.py
-docker compose up -d
+python setup.py
+docker compose up -d --wait
 ```
+
+The setup script will ask what you want to deploy:
+
+1. **Everything** — workspaces + web (MARA)
+2. **Web only** — MARA, tool server, and embeddings
+3. **Workspaces only** — Workspace API, database, and auth proxy
+
+Your choice is recorded in the root `.env` (via `COMPOSE_PROFILES`), so the
+same `docker compose up -d --wait` command deploys the right services for
+every mode — no extra flags needed. Re-run `python setup.py` at any time to
+change modes or settings; if you remove a service group, follow the script's
+prompt to run `docker compose down --remove-orphans` before starting again.
 
 ### Update / Redeploy
 
 ```sh
 cd nanome-ai-deployer
 python aws_login.py
-docker compose up -d
+docker compose up -d --wait
 ```
 
 ### Setup Step-by-step
@@ -79,14 +91,14 @@ docker compose up -d
 
 7)  Run setup script and start services
     ```sh
-    python setup_nanome.py
-    docker compose up -d
+    python setup.py
+    docker compose up -d --wait
     ```
 
 ### Troubleshooting
 
 - **"An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation" during setup**
-  The AWS credentials were likely entered incorrectly. You'll have the opportunity to reenter them when you run `setup_nanome.py`. Alternatively, you can edit them directly by opening `~/.aws/credentials` in a text editor.
+  The AWS credentials were likely entered incorrectly. You'll have the opportunity to reenter them when you run `setup.py`. Alternatively, you can edit them directly by opening `~/.aws/credentials` in a text editor.
 
 - **"Address already in use" error when starting services**
   Another program on the server is already using port 80. To find out what it is, run:

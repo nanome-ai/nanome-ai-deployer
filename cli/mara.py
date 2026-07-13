@@ -160,7 +160,7 @@ def configure_anthropic_envvars(mara_env) -> dict:
         )
     else:
         # Local TEI runs as the `mara-hf-tei` service in docker-compose-mara.yaml,
-        # gated by the `local-embeddings` compose profile. setup_mara.py turns
+        # gated by the `local-embeddings` compose profile. setup.py turns
         # the profile on by writing COMPOSE_PROFILES into the root .env.
         local_default_model = 'BAAI/bge-large-en-v1.5'
         existing_local_model = existing_embedding

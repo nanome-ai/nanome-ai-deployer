@@ -4,6 +4,7 @@ services:
   workspace-api:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/workspace-api:latest
     pull_policy: always
+    profiles: ["workspaces"]
     environment:
       - VIRTUAL_PORT=8002
       - PORT=8002
@@ -17,6 +18,7 @@ services:
       - workspace-api-volume:/data
   workspace-db:
     image: postgres:17
+    profiles: ["workspaces"]
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_USER=nanome
@@ -30,6 +32,7 @@ services:
   nanome-auth-proxy:
     image: 441665557124.dkr.ecr.us-west-1.amazonaws.com/nanome-auth-proxy:latest
     pull_policy: always
+    profiles: ["workspaces"]
     environment:
       - VIRTUAL_PORT=8004
       - PORT=8004
